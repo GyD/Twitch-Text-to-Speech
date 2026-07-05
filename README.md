@@ -1,19 +1,19 @@
 # Twitch Text-to-Speech
 
-Petite application légère pour fournir un overlay Text-to-Speech de chat Twitch.
+A lightweight Twitch chat Text-to-Speech overlay application.
 
 ## Stack
 
-- PHP 8.3 avec [Slim](https://www.slimframework.com/) pour le backend HTTP.
-- Twig pour les vues serveur.
-- SQLite pour stocker les utilisateurs Twitch et leurs préférences TTS.
-- JavaScript vanilla dans l’overlay OBS.
-- `tmi.js` côté navigateur pour lire le chat Twitch sans serveur WebSocket dédié.
-- Web Speech API côté overlay pour limiter la charge serveur, pratique sur Raspberry Pi.
+- PHP 8.3 with [Slim](https://www.slimframework.com/) for the HTTP backend.
+- Twig for server-rendered views.
+- SQLite to store Twitch users and their TTS preferences.
+- Vanilla JavaScript in the OBS overlay.
+- Browser-side `tmi.js` to read Twitch chat without a dedicated WebSocket server.
+- Browser-side Web Speech API to keep server resource usage low, which is useful on a Raspberry Pi.
 
-L’application est servie depuis `docroot/`.
+The application is served from `docroot/`.
 
-## Lancement avec DDEV
+## Development with DDEV
 
 ```bash
 ddev start
@@ -22,72 +22,72 @@ cp .env.example .env
 ddev exec php bin/migrate.php
 ```
 
-Si `ddev start` doit ajouter `twitch-tts.ddev.site` au fichier hosts, lance-le dans un terminal interactif afin de pouvoir saisir ton mot de passe sudo.
+If `ddev start` needs to add `twitch-tts.ddev.site` to your hosts file, run it from an interactive terminal so you can enter your sudo password.
 
-Ensuite, configure l’application Twitch avec l’URL de callback :
+Then configure your Twitch application with this callback URL:
 
 ```text
 https://twitch-tts.ddev.site/auth/twitch/callback
 ```
 
-Puis renseigne dans `.env` :
+Update `.env` with your Twitch application credentials:
 
 ```dotenv
 TWITCH_CLIENT_ID=...
 TWITCH_CLIENT_SECRET=...
 TWITCH_REDIRECT_URI=https://twitch-tts.ddev.site/auth/twitch/callback
 APP_URL=https://twitch-tts.ddev.site
-APP_SECRET=une-valeur-longue-et-aleatoire
+APP_SECRET=a-long-random-secret-value
 ```
 
-## Utilisation
+## Usage
 
-1. Ouvre `https://twitch-tts.ddev.site`.
-2. Connecte-toi avec Twitch.
-3. Configure les préférences TTS dans `/dashboard`.
-4. Copie l’URL overlay générée.
-5. Ajoute cette URL dans OBS comme source navigateur.
+1. Open `https://twitch-tts.ddev.site`.
+2. Sign in with Twitch.
+3. Configure your TTS preferences from `/dashboard`.
+4. Copy the generated overlay URL.
+5. Add that URL to OBS as a browser source.
 
 ## Raspberry Pi
 
-Pour un Raspberry Pi, cette architecture reste volontairement simple :
+The architecture is intentionally simple for Raspberry Pi usage:
 
-- pas de build frontend,
-- pas de Node.js obligatoire en production,
-- pas de serveur temps réel,
-- stockage local SQLite,
-- synthèse vocale exécutée par le navigateur/OBS qui affiche l’overlay.
+- no frontend build step,
+- no Node.js requirement in production,
+- no real-time backend server,
+- local SQLite storage,
+- speech synthesis runs in the browser or OBS instance that displays the overlay.
 
-Une installation PHP-FPM + Caddy/Nginx/Apache suffit en production. DDEV reste prévu pour le développement local.
+A PHP-FPM + Caddy/Nginx/Apache setup is enough for production. DDEV is intended for local development only.
 
-## Docker sans DDEV
+## Docker without DDEV
 
-Une image Docker de production est fournie pour lancer l’application facilement sur un Raspberry Pi ou un serveur Linux.
+A production Docker image is provided to run the application easily on a Raspberry Pi or Linux server.
 
-Elle utilise :
+It uses:
 
-- PHP 8.3 avec Apache,
-- SQLite via `pdo_sqlite`,
-- Apache configuré avec `docroot/` comme `DocumentRoot`,
-- un dossier hôte persistant `twitchtts-data/` pour la configuration et la base SQLite,
-- HTTPS servi directement par Apache sur le port interne `443`,
-- une migration automatique de la base au démarrage du conteneur.
+- PHP 8.3 with Apache,
+- SQLite through `pdo_sqlite`,
+- Apache configured with `docroot/` as the `DocumentRoot`,
+- a persistent host directory named `twitchtts-data/` for configuration, certificates, and the SQLite database,
+- HTTPS served directly by Apache on the internal `443` port,
+- automatic database migrations when the container starts.
 
-### Préparer la configuration
+### Prepare the configuration
 
-Crée le dossier qui contiendra les fichiers persistants sur la machine Docker :
+Create the directory that will contain persistent files on the Docker host:
 
 ```bash
 mkdir -p twitchtts-data/var twitchtts-data/certs
 cp .env.example twitchtts-data/.env
 ```
 
-Puis adapte `twitchtts-data/.env` pour ton environnement de production :
+Then edit `twitchtts-data/.env` for your production environment:
 
 ```dotenv
 APP_ENV=prod
 APP_URL=https://tts.example.com
-APP_SECRET=une-valeur-longue-et-aleatoire
+APP_SECRET=a-long-random-secret-value
 TWITCHTTS_HTTP_PORT=7317
 TWITCHTTS_HTTPS_PORT=8945
 TLS_CERT_COMMON_NAME=ras1
@@ -99,25 +99,25 @@ TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
 DATABASE_PATH=var/app.sqlite
 ```
 
-L’URL `TWITCH_REDIRECT_URI` doit être déclarée à l’identique dans la console Twitch Developer.
+The `TWITCH_REDIRECT_URI` value must be registered exactly as-is in the Twitch Developer Console.
 
-Le port exposé sur la machine Docker est configurable avec `TWITCHTTS_HTTP_PORT`. Par exemple, pour exposer l’application sur le port `8090` :
+The exposed HTTP port on the Docker host can be configured with `TWITCHTTS_HTTP_PORT`. For example, to expose the application on port `8090`:
 
 ```dotenv
 TWITCHTTS_HTTP_PORT=8090
 ```
 
-Le port interne du conteneur reste `80`; seul le port d’entrée côté Raspberry Pi change.
+The internal container port remains `80`; only the Raspberry Pi entry port changes.
 
-Le port HTTPS est configurable avec `TWITCHTTS_HTTPS_PORT`. Par défaut, l’application HTTPS est exposée sur le port `8945` :
+The exposed HTTPS port is configured with `TWITCHTTS_HTTPS_PORT`. By default, HTTPS is exposed on port `8945`:
 
 ```dotenv
 TWITCHTTS_HTTPS_PORT=8945
 ```
 
-Le conteneur génère automatiquement un certificat auto-signé dans `twitchtts-data/certs/` si aucun certificat n’existe encore. `TLS_CERT_COMMON_NAME` doit correspondre au nom utilisé dans le navigateur, par exemple `ras1` pour `https://ras1:8945/`.
+The container automatically generates a self-signed certificate in `twitchtts-data/certs/` if no certificate exists yet. `TLS_CERT_COMMON_NAME` should match the hostname used in the browser, for example `ras1` for `https://ras1:8945/`.
 
-Le fichier `.env` et la base SQLite restent donc sur la machine qui exécute Docker :
+The `.env` file and the SQLite database stay on the Docker host:
 
 ```text
 twitchtts-data/
@@ -129,37 +129,89 @@ twitchtts-data/
     └── app.sqlite
 ```
 
-Le dossier `twitchtts-data/` est ignoré par Git.
+The `twitchtts-data/` directory is ignored by Git.
 
-### Lancer avec Docker Compose
+### Start with Docker Compose
 
 ```bash
 docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
 ```
 
-L’application sera disponible localement sur :
+The application will be available locally at:
 
 ```text
 http://localhost:7317
 https://localhost:8945
 ```
 
-Si tu as changé `TWITCHTTS_HTTP_PORT`, remplace `7317` par la valeur configurée.
+If you changed `TWITCHTTS_HTTP_PORT`, replace `7317` with your configured value.
 
-ou depuis une autre machine du réseau :
+From another machine on the network, use:
 
 ```text
-http://IP_DU_RASPBERRY_PI:7317
-https://IP_DU_RASPBERRY_PI:8945
+http://RASPBERRY_PI_IP:7317
+https://RASPBERRY_PI_IP:8945
 ```
 
-ou, si ton réseau résout `ras1` :
+Or, if your network resolves `ras1`:
 
 ```text
 https://ras1:8945
 ```
 
-Avec le certificat auto-signé, le navigateur affichera un avertissement de sécurité la première fois. Il faut l’accepter ou installer `twitchtts-data/certs/server.crt` comme certificat de confiance sur les machines clientes.
+With the self-signed certificate, the browser will show a security warning the first time. You need to accept it or install `twitchtts-data/certs/server.crt` as a trusted certificate on client machines.
+
+### Update the application on Raspberry Pi
+
+From the application directory on the Raspberry Pi, first create a backup of the persistent data:
+
+```bash
+tar czf twitch-tts-backup-$(date +%Y%m%d-%H%M%S).tar.gz twitchtts-data/
+```
+
+Then pull the latest code:
+
+```bash
+git pull
+```
+
+If you deploy from a specific branch, for example `main`, use:
+
+```bash
+git pull origin main
+```
+
+Rebuild the image and restart the container:
+
+```bash
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
+```
+
+This command rebuilds the `twitch-tts:latest` image, recreates the container when needed, keeps the persistent `twitchtts-data/` directory, and runs database migrations automatically through `docker/entrypoint.sh`.
+
+Check the logs after the update:
+
+```bash
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
+```
+
+You can stop following logs with `Ctrl+C`; the container will keep running.
+
+Optional cleanup to free disk space on the Raspberry Pi:
+
+```bash
+docker image prune -f
+```
+
+Short update sequence:
+
+```bash
+cd /path/to/Twitch-Text-to-Speech
+tar czf twitch-tts-backup-$(date +%Y%m%d-%H%M%S).tar.gz twitchtts-data/
+git pull
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
+```
 
 ### Logs
 
@@ -167,17 +219,17 @@ Avec le certificat auto-signé, le navigateur affichera un avertissement de séc
 docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
 ```
 
-### Arrêt
+### Stop
 
 ```bash
 docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml down
 ```
 
-Les données SQLite restent conservées dans `twitchtts-data/var/app.sqlite`.
+The SQLite data remains stored in `twitchtts-data/var/app.sqlite`.
 
-### Sauvegarde
+### Backup
 
-Pour sauvegarder la configuration et la base SQLite :
+To back up the configuration, certificates, and SQLite database:
 
 ```bash
 tar czf twitch-tts-backup.tar.gz twitchtts-data/
@@ -185,9 +237,9 @@ tar czf twitch-tts-backup.tar.gz twitchtts-data/
 
 ### HTTPS
 
-Pour Twitch OAuth, il est recommandé d’utiliser l’URL HTTPS dans `APP_URL` et `TWITCH_REDIRECT_URI`.
+For Twitch OAuth, using HTTPS in `APP_URL` and `TWITCH_REDIRECT_URI` is recommended.
 
-Option locale directe avec le HTTPS du conteneur :
+Direct local HTTPS option with the container HTTPS endpoint:
 
 ```dotenv
 APP_URL=https://ras1:8945
@@ -195,9 +247,9 @@ TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
 TLS_CERT_COMMON_NAME=ras1
 ```
 
-Alternatives si tu veux un certificat publiquement reconnu :
+Alternatives if you want a publicly trusted certificate:
 
-- Caddy ou Nginx en reverse proxy devant `http://localhost:7317`,
-- Cloudflare Tunnel si tu ne veux pas ouvrir de port sur ta box.
+- Caddy or Nginx as a reverse proxy in front of `http://localhost:7317`,
+- Cloudflare Tunnel if you do not want to open a port on your router.
 
-Si `APP_URL` commence par `https://`, les cookies de session sont marqués `Secure`. Il faut donc accéder réellement à l’application en HTTPS.
+If `APP_URL` starts with `https://`, session cookies are marked as `Secure`. You must therefore access the application over HTTPS.
