@@ -17,6 +17,17 @@ function normalizeLogin(value) {
   return String(value || '').replace(/^#/, '').toLowerCase();
 }
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function stripLeadingBroadcasterMention(message) {
+  const channel = normalizeLogin(settings.channel);
+  const mentionRegex = new RegExp(`^@${escapeRegex(channel)}\\b[,;:!?.\\s-]*`, 'i');
+
+  return message.replace(mentionRegex, '').trim();
+}
+
 function shouldSkipMessage(tags, message) {
   const badges = tags.badges || {};
   const displayName = normalizeLogin(tags['display-name']);
@@ -68,9 +79,15 @@ function shouldSkipMessage(tags, message) {
 }
 
 function speak(tags, message) {
+  const spokenMessage = settings.taggedOnly ? stripLeadingBroadcasterMention(message) : message;
+
+  if (spokenMessage === '') {
+    return;
+  }
+
   const text = settings.announceChatter
-    ? `${tags['display-name'] || tags.username} dit ${message}`
-    : message;
+    ? `${tags['display-name'] || tags.username} dit ${spokenMessage}`
+    : spokenMessage;
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.volume = settings.volume;
