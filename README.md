@@ -11,7 +11,7 @@ Petite application légère pour fournir un overlay Text-to-Speech de chat Twitc
 - `tmi.js` côté navigateur pour lire le chat Twitch sans serveur WebSocket dédié.
 - Web Speech API côté overlay pour limiter la charge serveur, pratique sur Raspberry Pi.
 
-L’ancienne démo statique est conservée dans `public/`. La nouvelle application est servie depuis `docroot/`.
+L’application est servie depuis `docroot/`.
 
 ## Lancement avec DDEV
 
