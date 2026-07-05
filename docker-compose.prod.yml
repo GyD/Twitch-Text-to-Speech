@@ -5,13 +5,11 @@ services:
     image: twitch-tts:latest
     restart: unless-stopped
     env_file:
-      - ./twitchtts-data/.env
-    environment:
-      APP_ENV: prod
-      DATABASE_PATH: var/app.sqlite
+      - ./twitchtts-data/docker.env
     ports:
       - "${TWITCHTTS_HTTP_PORT:-7317}:80"
       - "${TWITCHTTS_HTTPS_PORT:-8945}:443"
     volumes:
       - ./twitchtts-data/var:/var/www/html/var
       - ./twitchtts-data/certs:/etc/twitch-tts/certs
+      - ./twitchtts-data/settings.local.php:/var/www/html/config/settings.local.php:ro

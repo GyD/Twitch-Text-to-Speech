@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth;
 
+use App\Config\AppConfig;
 use RuntimeException;
 
 final class TwitchAuthService
@@ -12,11 +13,11 @@ final class TwitchAuthService
     private string $clientSecret;
     private string $redirectUri;
 
-    public function __construct()
+    public function __construct(AppConfig $config)
     {
-        $this->clientId = $_ENV['TWITCH_CLIENT_ID'] ?? '';
-        $this->clientSecret = $_ENV['TWITCH_CLIENT_SECRET'] ?? '';
-        $this->redirectUri = $_ENV['TWITCH_REDIRECT_URI'] ?? '';
+        $this->clientId = $config->twitchClientId();
+        $this->clientSecret = $config->twitchClientSecret();
+        $this->redirectUri = $config->twitchRedirectUri();
     }
 
     public function getAuthorizationUrl(string $state): string
@@ -73,7 +74,7 @@ final class TwitchAuthService
     private function assertConfigured(): void
     {
         if ($this->clientId === '' || $this->clientSecret === '' || $this->redirectUri === '') {
-            throw new RuntimeException('Twitch OAuth is not configured. Please check TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET and TWITCH_REDIRECT_URI.');
+            throw new RuntimeException('Twitch OAuth is not configured. Please check config/settings.local.php.');
         }
     }
 

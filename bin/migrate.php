@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-use Dotenv\Dotenv;
+use App\Config\AppConfig;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 $rootPath = dirname(__DIR__);
+$config = AppConfig::load($rootPath);
 
-if (file_exists($rootPath . '/.env')) {
-    Dotenv::createImmutable($rootPath)->safeLoad();
-}
-
-$databasePath = $_ENV['DATABASE_PATH'] ?? 'var/app.sqlite';
+$databasePath = $config->databasePath();
 $databaseFile = str_starts_with($databasePath, '/') ? $databasePath : $rootPath . '/' . $databasePath;
 $databaseDir = dirname($databaseFile);
 

@@ -34,9 +34,6 @@ RUN chmod +x /usr/local/bin/twitch-tts-entrypoint \
     && mkdir -p /var/www/html/var /etc/twitch-tts/certs \
     && chown -R www-data:www-data /var/www/html/var
 
-ENV APP_ENV=prod \
-    DATABASE_PATH=var/app.sqlite
-
 EXPOSE 80 443
 
 ENTRYPOINT ["twitch-tts-entrypoint"]

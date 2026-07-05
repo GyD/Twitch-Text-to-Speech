@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Database;
 
+use App\Config\AppConfig;
 use PDO;
 
 final class Database
 {
-    public function __construct(private readonly string $rootPath)
-    {
+    public function __construct(
+        private readonly string $rootPath,
+        private readonly AppConfig $config,
+    ) {
     }
 
     public function connect(): PDO
     {
-        $databasePath = $_ENV['DATABASE_PATH'] ?? 'var/app.sqlite';
+        $databasePath = $this->config->databasePath();
         $databaseFile = str_starts_with($databasePath, '/') ? $databasePath : $this->rootPath . '/' . $databasePath;
         $databaseDir = dirname($databaseFile);
 

@@ -4,6 +4,7 @@
 .idea/
 #app files
 /.env
+/config/settings.local.php
 /vendor/
 /var/
 /twitchtts-data/

@@ -7,11 +7,11 @@ use App\Controller\AuthController;
 use App\Controller\DashboardController;
 use App\Controller\HomeController;
 use App\Controller\OverlayController;
+use App\Config\AppConfig;
 use App\Database\Database;
 use App\Middleware\AuthMiddleware;
 use App\Repository\TtsSettingsRepository;
 use App\Repository\UserRepository;
-use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -19,35 +19,32 @@ use Twig\Loader\FilesystemLoader;
 require __DIR__ . '/../vendor/autoload.php';
 
 $rootPath = dirname(__DIR__);
-
-if (file_exists($rootPath . '/.env')) {
-    Dotenv::createImmutable($rootPath)->safeLoad();
-}
+$config = AppConfig::load($rootPath);
 
 session_name('twitch_tts_session');
 session_start([
     'cookie_httponly' => true,
     'cookie_samesite' => 'Lax',
-    'cookie_secure' => str_starts_with($_ENV['APP_URL'] ?? '', 'https://'),
+    'cookie_secure' => str_starts_with($config->appUrl(), 'https://'),
 ]);
 
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
-$app->addErrorMiddleware(($_ENV['APP_ENV'] ?? 'prod') !== 'prod', true, true);
+$app->addErrorMiddleware($config->appEnv() !== 'prod', true, true);
 
 $twig = new Environment(new FilesystemLoader($rootPath . '/templates'), [
     'cache' => false,
     'strict_variables' => true,
 ]);
 
-$pdo = (new Database($rootPath))->connect();
+$pdo = (new Database($rootPath, $config))->connect();
 $users = new UserRepository($pdo);
 $settings = new TtsSettingsRepository($pdo);
 
-$home = new HomeController($twig);
-$auth = new AuthController(new TwitchAuthService(), $users, $settings);
-$dashboard = new DashboardController($twig, $users, $settings);
+$home = new HomeController($twig, $config);
+$auth = new AuthController(new TwitchAuthService($config), $users, $settings);
+$dashboard = new DashboardController($twig, $users, $settings, $config);
 $overlay = new OverlayController($twig, $settings);
 $authMiddleware = new AuthMiddleware();
 

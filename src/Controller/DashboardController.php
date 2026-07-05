@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Config\AppConfig;
 use App\Repository\TtsSettingsRepository;
 use App\Repository\UserRepository;
 use Psr\Http\Message\ResponseInterface;
@@ -16,6 +17,7 @@ final class DashboardController
         private readonly Environment $twig,
         private readonly UserRepository $users,
         private readonly TtsSettingsRepository $settings,
+        private readonly AppConfig $config,
     ) {
     }
 
@@ -24,7 +26,7 @@ final class DashboardController
         $userId = (int) $_SESSION['user_id'];
         $user = $this->users->find($userId);
         $settings = $this->settings->getOrCreateForUser($userId, (string) ($user['login'] ?? ''));
-        $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+        $appUrl = $this->config->appUrl();
 
         $response->getBody()->write($this->twig->render('dashboard.twig', [
             'isAuthenticated' => true,
@@ -62,7 +64,7 @@ final class DashboardController
             'cooldown_ms' => $data['cooldown_ms'] ?? 1000,
         ]);
 
-        $_SESSION['flash'] = 'Préférences TTS sauvegardées.';
+        $_SESSION['flash'] = 'TTS preferences saved.';
 
         return $response->withHeader('Location', '/dashboard')->withStatus(302);
     }

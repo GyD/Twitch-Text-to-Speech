@@ -18,7 +18,7 @@ The application is served from `docroot/`.
 ```bash
 ddev start
 ddev composer install
-cp .env.example .env
+cp config/settings.local.example.php config/settings.local.php
 ddev exec php bin/migrate.php
 ```
 
@@ -30,14 +30,27 @@ Then configure your Twitch application with this callback URL:
 https://twitch-tts.ddev.site/auth/twitch/callback
 ```
 
-Update `.env` with your Twitch application credentials:
+Update `config/settings.local.php` with your Twitch application credentials:
 
-```dotenv
-TWITCH_CLIENT_ID=...
-TWITCH_CLIENT_SECRET=...
-TWITCH_REDIRECT_URI=https://twitch-tts.ddev.site/auth/twitch/callback
-APP_URL=https://twitch-tts.ddev.site
-APP_SECRET=a-long-random-secret-value
+```php
+<?php
+
+declare(strict_types=1);
+
+return [
+    'app' => [
+        'env' => 'dev',
+        'url' => 'https://twitch-tts.ddev.site',
+    ],
+    'database' => [
+        'path' => 'var/app.sqlite',
+    ],
+    'twitch' => [
+        'client_id' => '...',
+        'client_secret' => '...',
+        'redirect_uri' => 'https://twitch-tts.ddev.site/auth/twitch/callback',
+    ],
+];
 ```
 
 ## Usage
@@ -79,27 +92,42 @@ Create the directory that will contain persistent files on the Docker host:
 
 ```bash
 mkdir -p twitchtts-data/var twitchtts-data/certs
-cp .env.example twitchtts-data/.env
+cp docker.env.example twitchtts-data/docker.env
+cp config/settings.local.example.php twitchtts-data/settings.local.php
 ```
 
-Then edit `twitchtts-data/.env` for your production environment:
+Then edit `twitchtts-data/docker.env` for Docker-only settings:
 
 ```dotenv
-APP_ENV=prod
-APP_URL=https://tts.example.com
-APP_SECRET=a-long-random-secret-value
 TWITCHTTS_HTTP_PORT=7317
 TWITCHTTS_HTTPS_PORT=8945
 TLS_CERT_COMMON_NAME=ras1
-
-TWITCH_CLIENT_ID=...
-TWITCH_CLIENT_SECRET=...
-TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
-
-DATABASE_PATH=var/app.sqlite
 ```
 
-The `TWITCH_REDIRECT_URI` value must be registered exactly as-is in the Twitch Developer Console.
+Then edit `twitchtts-data/settings.local.php` for PHP application settings:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+return [
+    'app' => [
+        'env' => 'prod',
+        'url' => 'https://ras1:8945',
+    ],
+    'database' => [
+        'path' => 'var/app.sqlite',
+    ],
+    'twitch' => [
+        'client_id' => '...',
+        'client_secret' => '...',
+        'redirect_uri' => 'https://ras1:8945/auth/twitch/callback',
+    ],
+];
+```
+
+The `twitch.redirect_uri` value must be registered exactly as-is in the Twitch Developer Console.
 
 The exposed HTTP port on the Docker host can be configured with `TWITCHTTS_HTTP_PORT`. For example, to expose the application on port `8090`:
 
@@ -117,11 +145,12 @@ TWITCHTTS_HTTPS_PORT=8945
 
 The container automatically generates a self-signed certificate in `twitchtts-data/certs/` if no certificate exists yet. `TLS_CERT_COMMON_NAME` should match the hostname used in the browser, for example `ras1` for `https://ras1:8945/`.
 
-The `.env` file and the SQLite database stay on the Docker host:
+The PHP settings, Docker environment file, certificates, and SQLite database stay on the Docker host:
 
 ```text
 twitchtts-data/
-├── .env
+├── docker.env
+├── settings.local.php
 ├── certs/
 │   ├── server.crt
 │   └── server.key
@@ -134,7 +163,7 @@ The `twitchtts-data/` directory is ignored by Git.
 ### Start with Docker Compose
 
 ```bash
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml up -d --build
 ```
 
 The application will be available locally at:
@@ -184,7 +213,7 @@ git pull origin main
 Rebuild the image and restart the container:
 
 ```bash
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml up -d --build
 ```
 
 This command rebuilds the `twitch-tts:latest` image, recreates the container when needed, keeps the persistent `twitchtts-data/` directory, and runs database migrations automatically through `docker/entrypoint.sh`.
@@ -192,7 +221,7 @@ This command rebuilds the `twitch-tts:latest` image, recreates the container whe
 Check the logs after the update:
 
 ```bash
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml logs -f
 ```
 
 You can stop following logs with `Ctrl+C`; the container will keep running.
@@ -209,20 +238,20 @@ Short update sequence:
 cd /path/to/Twitch-Text-to-Speech
 tar czf twitch-tts-backup-$(date +%Y%m%d-%H%M%S).tar.gz twitchtts-data/
 git pull
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml up -d --build
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml logs -f
 ```
 
 ### Logs
 
 ```bash
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml logs -f
 ```
 
 ### Stop
 
 ```bash
-docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml down
+docker compose --env-file ./twitchtts-data/docker.env -f docker-compose.prod.yml down
 ```
 
 The SQLite data remains stored in `twitchtts-data/var/app.sqlite`.
@@ -237,19 +266,26 @@ tar czf twitch-tts-backup.tar.gz twitchtts-data/
 
 ### HTTPS
 
-For Twitch OAuth, using HTTPS in `APP_URL` and `TWITCH_REDIRECT_URI` is recommended.
+For Twitch OAuth, using HTTPS in `app.url` and `twitch.redirect_uri` is recommended.
 
 Direct local HTTPS option with the container HTTPS endpoint:
 
-```dotenv
-APP_URL=https://ras1:8945
-TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
-TLS_CERT_COMMON_NAME=ras1
+```php
+return [
+    'app' => [
+        'url' => 'https://ras1:8945',
+    ],
+    'twitch' => [
+        'redirect_uri' => 'https://ras1:8945/auth/twitch/callback',
+    ],
+];
 ```
+
+Keep `TLS_CERT_COMMON_NAME=ras1` in `twitchtts-data/docker.env` so the self-signed certificate matches the local hostname.
 
 Alternatives if you want a publicly trusted certificate:
 
 - Caddy or Nginx as a reverse proxy in front of `http://localhost:7317`,
 - Cloudflare Tunnel if you do not want to open a port on your router.
 
-If `APP_URL` starts with `https://`, session cookies are marked as `Secure`. You must therefore access the application over HTTPS.
+If `app.url` starts with `https://`, session cookies are marked as `Secure`. You must therefore access the application over HTTPS.
