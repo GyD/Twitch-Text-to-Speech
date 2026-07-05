@@ -70,6 +70,7 @@ Elle utilise :
 - SQLite via `pdo_sqlite`,
 - Apache configuré avec `docroot/` comme `DocumentRoot`,
 - un dossier hôte persistant `twitchtts-data/` pour la configuration et la base SQLite,
+- HTTPS servi directement par Apache sur le port interne `443`,
 - une migration automatique de la base au démarrage du conteneur.
 
 ### Préparer la configuration
@@ -77,7 +78,7 @@ Elle utilise :
 Crée le dossier qui contiendra les fichiers persistants sur la machine Docker :
 
 ```bash
-mkdir -p twitchtts-data/var
+mkdir -p twitchtts-data/var twitchtts-data/certs
 cp .env.example twitchtts-data/.env
 ```
 
@@ -88,10 +89,12 @@ APP_ENV=prod
 APP_URL=https://tts.example.com
 APP_SECRET=une-valeur-longue-et-aleatoire
 TWITCHTTS_HTTP_PORT=7317
+TWITCHTTS_HTTPS_PORT=8945
+TLS_CERT_COMMON_NAME=ras1
 
 TWITCH_CLIENT_ID=...
 TWITCH_CLIENT_SECRET=...
-TWITCH_REDIRECT_URI=https://tts.example.com/auth/twitch/callback
+TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
 
 DATABASE_PATH=var/app.sqlite
 ```
@@ -106,11 +109,22 @@ TWITCHTTS_HTTP_PORT=8090
 
 Le port interne du conteneur reste `80`; seul le port d’entrée côté Raspberry Pi change.
 
+Le port HTTPS est configurable avec `TWITCHTTS_HTTPS_PORT`. Par défaut, l’application HTTPS est exposée sur le port `8945` :
+
+```dotenv
+TWITCHTTS_HTTPS_PORT=8945
+```
+
+Le conteneur génère automatiquement un certificat auto-signé dans `twitchtts-data/certs/` si aucun certificat n’existe encore. `TLS_CERT_COMMON_NAME` doit correspondre au nom utilisé dans le navigateur, par exemple `ras1` pour `https://ras1:8945/`.
+
 Le fichier `.env` et la base SQLite restent donc sur la machine qui exécute Docker :
 
 ```text
 twitchtts-data/
 ├── .env
+├── certs/
+│   ├── server.crt
+│   └── server.key
 └── var/
     └── app.sqlite
 ```
@@ -127,6 +141,7 @@ L’application sera disponible localement sur :
 
 ```text
 http://localhost:7317
+https://localhost:8945
 ```
 
 Si tu as changé `TWITCHTTS_HTTP_PORT`, remplace `7317` par la valeur configurée.
@@ -135,7 +150,16 @@ ou depuis une autre machine du réseau :
 
 ```text
 http://IP_DU_RASPBERRY_PI:7317
+https://IP_DU_RASPBERRY_PI:8945
 ```
+
+ou, si ton réseau résout `ras1` :
+
+```text
+https://ras1:8945
+```
+
+Avec le certificat auto-signé, le navigateur affichera un avertissement de sécurité la première fois. Il faut l’accepter ou installer `twitchtts-data/certs/server.crt` comme certificat de confiance sur les machines clientes.
 
 ### Logs
 
@@ -159,11 +183,19 @@ Pour sauvegarder la configuration et la base SQLite :
 tar czf twitch-tts-backup.tar.gz twitchtts-data/
 ```
 
-### HTTPS recommandé
+### HTTPS
 
-Pour Twitch OAuth, il est recommandé d’exposer l’application derrière une URL HTTPS.
+Pour Twitch OAuth, il est recommandé d’utiliser l’URL HTTPS dans `APP_URL` et `TWITCH_REDIRECT_URI`.
 
-Deux options simples :
+Option locale directe avec le HTTPS du conteneur :
+
+```dotenv
+APP_URL=https://ras1:8945
+TWITCH_REDIRECT_URI=https://ras1:8945/auth/twitch/callback
+TLS_CERT_COMMON_NAME=ras1
+```
+
+Alternatives si tu veux un certificat publiquement reconnu :
 
 - Caddy ou Nginx en reverse proxy devant `http://localhost:7317`,
 - Cloudflare Tunnel si tu ne veux pas ouvrir de port sur ta box.
