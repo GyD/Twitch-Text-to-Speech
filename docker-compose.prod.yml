@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+    image: twitch-tts:latest
+    restart: unless-stopped
+    env_file:
+      - ./twitchtts-data/.env
+    environment:
+      APP_ENV: prod
+      DATABASE_PATH: var/app.sqlite
+    ports:
+      - "8080:80"
+    volumes:
+      - ./twitchtts-data/var:/var/www/html/var

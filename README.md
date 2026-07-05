@@ -59,3 +59,102 @@ Pour un Raspberry Pi, cette architecture reste volontairement simple :
 - synthèse vocale exécutée par le navigateur/OBS qui affiche l’overlay.
 
 Une installation PHP-FPM + Caddy/Nginx/Apache suffit en production. DDEV reste prévu pour le développement local.
+
+## Docker sans DDEV
+
+Une image Docker de production est fournie pour lancer l’application facilement sur un Raspberry Pi ou un serveur Linux.
+
+Elle utilise :
+
+- PHP 8.3 avec Apache,
+- SQLite via `pdo_sqlite`,
+- Apache configuré avec `docroot/` comme `DocumentRoot`,
+- un dossier hôte persistant `twitchtts-data/` pour la configuration et la base SQLite,
+- une migration automatique de la base au démarrage du conteneur.
+
+### Préparer la configuration
+
+Crée le dossier qui contiendra les fichiers persistants sur la machine Docker :
+
+```bash
+mkdir -p twitchtts-data/var
+cp .env.example twitchtts-data/.env
+```
+
+Puis adapte `twitchtts-data/.env` pour ton environnement de production :
+
+```dotenv
+APP_ENV=prod
+APP_URL=https://tts.example.com
+APP_SECRET=une-valeur-longue-et-aleatoire
+
+TWITCH_CLIENT_ID=...
+TWITCH_CLIENT_SECRET=...
+TWITCH_REDIRECT_URI=https://tts.example.com/auth/twitch/callback
+
+DATABASE_PATH=var/app.sqlite
+```
+
+L’URL `TWITCH_REDIRECT_URI` doit être déclarée à l’identique dans la console Twitch Developer.
+
+Le fichier `.env` et la base SQLite restent donc sur la machine qui exécute Docker :
+
+```text
+twitchtts-data/
+├── .env
+└── var/
+    └── app.sqlite
+```
+
+Le dossier `twitchtts-data/` est ignoré par Git.
+
+### Lancer avec Docker Compose
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+L’application sera disponible localement sur :
+
+```text
+http://localhost:8080
+```
+
+ou depuis une autre machine du réseau :
+
+```text
+http://IP_DU_RASPBERRY_PI:8080
+```
+
+### Logs
+
+```bash
+docker compose -f docker-compose.prod.yml logs -f
+```
+
+### Arrêt
+
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+Les données SQLite restent conservées dans `twitchtts-data/var/app.sqlite`.
+
+### Sauvegarde
+
+Pour sauvegarder la configuration et la base SQLite :
+
+```bash
+tar czf twitch-tts-backup.tar.gz twitchtts-data/
+```
+
+### HTTPS recommandé
+
+Pour Twitch OAuth, il est recommandé d’exposer l’application derrière une URL HTTPS.
+
+Deux options simples :
+
+- Caddy ou Nginx en reverse proxy devant `http://localhost:8080`,
+- Cloudflare Tunnel si tu ne veux pas ouvrir de port sur ta box.
+
+Si `APP_URL` commence par `https://`, les cookies de session sont marqués `Secure`. Il faut donc accéder réellement à l’application en HTTPS.

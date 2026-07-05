@@ -1,0 +1,15 @@
+.ddev
+.devcontainer
+.git
+.github
+.idea
+
+.DS_Store
+**/.DS_Store
+
+.env
+var
+vendor
+
+docker-compose*.yml
+README.md
