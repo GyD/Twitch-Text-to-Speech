@@ -77,6 +77,7 @@ final class TtsSettingsRepository
             'UPDATE tts_settings SET
                 channel = :channel,
                 volume = :volume,
+                rate = :rate,
                 voice_name = :voice_name,
                 announce_chatter = :announce_chatter,
                 mods_only = :mods_only,
@@ -95,6 +96,7 @@ final class TtsSettingsRepository
             'user_id' => $userId,
             'channel' => $this->sanitizeChannel((string) $data['channel']),
             'volume' => max(0, min(1, (float) $data['volume'])),
+            'rate' => max(0.5, min(2, (float) $data['rate'])),
             'voice_name' => $data['voice_name'] ?: null,
             'announce_chatter' => !empty($data['announce_chatter']) ? 1 : 0,
             'mods_only' => !empty($data['mods_only']) ? 1 : 0,
@@ -118,6 +120,7 @@ final class TtsSettingsRepository
         $settings['tagged_only'] = (bool) $settings['tagged_only'];
         $settings['exclude_commands'] = (bool) $settings['exclude_commands'];
         $settings['exclude_links'] = (bool) $settings['exclude_links'];
+        $settings['rate'] = (float) ($settings['rate'] ?? 1);
         $settings['excluded_chatters'] = json_decode($settings['excluded_chatters_json'] ?? '[]', true) ?: [];
 
         return $settings;

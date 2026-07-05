@@ -1,8 +1,10 @@
 const token = document.body.dataset.overlayToken;
 const statusElement = document.getElementById('status');
+const settingsPollIntervalMs = 5000;
 
 let settings = null;
 let lastSpokenAt = 0;
+let settingsVersion = null;
 
 const linkRegex = /(([a-z]+:\/\/)?(([a-z0-9-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[^\s]*)?)/i;
 
@@ -68,6 +70,7 @@ function speak(tags, message) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.volume = settings.volume;
+  utterance.rate = settings.rate;
 
   if (settings.voiceName) {
     const voice = speechSynthesis.getVoices().find((candidate) => candidate.name === settings.voiceName);
@@ -89,6 +92,25 @@ async function loadSettings() {
 
   settings = await response.json();
   settings.excludedChatters = (settings.excludedChatters || []).map(normalizeLogin);
+  settingsVersion = settings.version;
+}
+
+async function reloadOverlayWhenSettingsChange() {
+  try {
+    const response = await fetch(`/api/overlay/${token}`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      throw new Error('Impossible de vérifier les préférences de l’overlay.');
+    }
+
+    const latestSettings = await response.json();
+
+    if (settingsVersion !== null && latestSettings.version !== settingsVersion) {
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function start() {
@@ -111,6 +133,8 @@ async function start() {
   });
 
   await client.connect();
+
+  window.setInterval(reloadOverlayWhenSettingsChange, settingsPollIntervalMs);
 }
 
 window.speechSynthesis.onvoiceschanged = () => {};

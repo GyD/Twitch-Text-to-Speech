@@ -145,6 +145,27 @@ input[type="checkbox"] {
     width: auto;
 }
 
+.range-field {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.range-field input {
+    flex: 1;
+}
+
+.range-field output {
+    min-width: 3rem;
+    padding: .35rem .5rem;
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    background: #0b1120;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
 .checkbox-grid,
 .form-grid {
     display: grid;

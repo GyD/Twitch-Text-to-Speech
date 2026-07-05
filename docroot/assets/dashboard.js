@@ -16,6 +16,21 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
   });
 });
 
+document.querySelectorAll('[data-range-output]').forEach((rangeInput) => {
+  const output = document.getElementById(rangeInput.dataset.rangeOutput);
+
+  if (!output) {
+    return;
+  }
+
+  const updateOutput = () => {
+    output.value = Number(rangeInput.value).toFixed(1);
+  };
+
+  updateOutput();
+  rangeInput.addEventListener('input', updateOutput);
+});
+
 const voiceSelect = document.getElementById('voice-select');
 
 function populateVoiceSelect() {

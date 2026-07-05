@@ -46,8 +46,10 @@ final class OverlayController
         }
 
         $payload = [
+            'version' => $settings['updated_at'],
             'channel' => $settings['channel'],
             'volume' => (float) $settings['volume'],
+            'rate' => (float) $settings['rate'],
             'voiceName' => $settings['voice_name'],
             'announceChatter' => $settings['announce_chatter'],
             'modsOnly' => $settings['mods_only'],

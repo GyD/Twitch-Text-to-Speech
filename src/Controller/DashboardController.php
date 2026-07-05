@@ -47,6 +47,7 @@ final class DashboardController
         $this->settings->saveForUser((int) $_SESSION['user_id'], [
             'channel' => $data['channel'] ?? '',
             'volume' => $data['volume'] ?? 1,
+            'rate' => $data['rate'] ?? 1,
             'voice_name' => $data['voice_name'] ?? '',
             'announce_chatter' => $data['announce_chatter'] ?? false,
             'mods_only' => $data['mods_only'] ?? false,

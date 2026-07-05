@@ -32,4 +32,8 @@ if (!in_array('vips_only', $columnNames, true)) {
     $pdo->exec('ALTER TABLE tts_settings ADD COLUMN vips_only INTEGER NOT NULL DEFAULT 0');
 }
 
+if (!in_array('rate', $columnNames, true)) {
+    $pdo->exec('ALTER TABLE tts_settings ADD COLUMN rate REAL NOT NULL DEFAULT 1');
+}
+
 echo sprintf("SQLite database migrated: %s\n", $databaseFile);

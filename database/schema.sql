@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS tts_settings (
     user_id INTEGER NOT NULL UNIQUE,
     channel TEXT NOT NULL,
     volume REAL NOT NULL DEFAULT 1,
+    rate REAL NOT NULL DEFAULT 1,
     voice_name TEXT,
     announce_chatter INTEGER NOT NULL DEFAULT 0,
     mods_only INTEGER NOT NULL DEFAULT 0,
