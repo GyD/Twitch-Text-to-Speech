@@ -48,6 +48,10 @@ function shouldSkipMessage(tags, message) {
     return true;
   }
 
+  if (settings.ignoreReplies && (tags['reply-parent-msg-id'] || tags['reply-thread-parent-msg-id'])) {
+    return true;
+  }
+
   if (settings.excludedChatters.includes(displayName)) {
     return true;
   }

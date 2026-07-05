@@ -83,6 +83,7 @@ final class TtsSettingsRepository
                 mods_only = :mods_only,
                 vips_only = :vips_only,
                 tagged_only = :tagged_only,
+                ignore_replies = :ignore_replies,
                 exclude_commands = :exclude_commands,
                 exclude_links = :exclude_links,
                 excluded_chatters_json = :excluded_chatters_json,
@@ -102,6 +103,7 @@ final class TtsSettingsRepository
             'mods_only' => !empty($data['mods_only']) ? 1 : 0,
             'vips_only' => !empty($data['vips_only']) ? 1 : 0,
             'tagged_only' => !empty($data['tagged_only']) ? 1 : 0,
+            'ignore_replies' => !empty($data['ignore_replies']) ? 1 : 0,
             'exclude_commands' => !empty($data['exclude_commands']) ? 1 : 0,
             'exclude_links' => !empty($data['exclude_links']) ? 1 : 0,
             'excluded_chatters_json' => json_encode($this->parseExcludedChatters((string) $data['excluded_chatters']), JSON_THROW_ON_ERROR),
@@ -118,6 +120,7 @@ final class TtsSettingsRepository
         $settings['mods_only'] = (bool) $settings['mods_only'];
         $settings['vips_only'] = (bool) ($settings['vips_only'] ?? false);
         $settings['tagged_only'] = (bool) $settings['tagged_only'];
+        $settings['ignore_replies'] = (bool) ($settings['ignore_replies'] ?? false);
         $settings['exclude_commands'] = (bool) $settings['exclude_commands'];
         $settings['exclude_links'] = (bool) $settings['exclude_links'];
         $settings['rate'] = (float) ($settings['rate'] ?? 1);

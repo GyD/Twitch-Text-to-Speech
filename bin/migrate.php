@@ -36,4 +36,8 @@ if (!in_array('rate', $columnNames, true)) {
     $pdo->exec('ALTER TABLE tts_settings ADD COLUMN rate REAL NOT NULL DEFAULT 1');
 }
 
+if (!in_array('ignore_replies', $columnNames, true)) {
+    $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_replies INTEGER NOT NULL DEFAULT 0');
+}
+
 echo sprintf("SQLite database migrated: %s\n", $databaseFile);
