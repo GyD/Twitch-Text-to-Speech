@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+## Description: Generate a baseline file for phpstan.
+## Usage: phpstan-baseline
+
+php -dmemory_limit=512M ./vendor/bin/phpstan analyse --generate-baseline -c phpstan.neon .

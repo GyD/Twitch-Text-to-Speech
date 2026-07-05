@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+## Description: Perform a phpstan analyse on the full codebase.
+## Usage: phpstan-analyse
+
+php -dmemory_limit=512M ./vendor/bin/phpstan analyse -c phpstan.neon

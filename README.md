@@ -22,6 +22,18 @@ cp config/settings.local.example.php config/settings.local.php
 ddev exec php bin/migrate.php
 ```
 
+Run static analysis during development:
+
+```bash
+ddev phpstan-analyse
+```
+
+Generate a PHPStan baseline when needed:
+
+```bash
+ddev phpstan-baseline
+```
+
 If `ddev start` needs to add `twitch-tts.ddev.site` to your hosts file, run it from an interactive terminal so you can enter your sudo password.
 
 Then configure your Twitch application with this callback URL:
