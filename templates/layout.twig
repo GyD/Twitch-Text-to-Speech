@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Twitch TTS{% endblock %}</title>
+    <link rel="stylesheet" href="/assets/app.css">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="/">Twitch TTS</a>
+    <nav>
+        {% if isAuthenticated|default(false) %}
+            <a href="/dashboard">Configuration</a>
+            <form method="post" action="/logout" class="inline-form">
+                <button type="submit">Déconnexion</button>
+            </form>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

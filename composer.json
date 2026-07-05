@@ -1,0 +1,24 @@
+{
+  "name": "gyd/twitch-text-to-speech",
+  "description": "Lightweight Twitch TTS overlay application built with Slim, Twig and SQLite.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "slim/psr7": "^1.7",
+    "slim/slim": "^4.14",
+    "twig/twig": "^3.0",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "scripts": {
+    "migrate": "php bin/migrate.php"
+  }
+}

@@ -1,1 +1,8 @@
+#mac files
 .DS_Store
+#phpstorm
+.idea/
+#app files
+/.env
+/vendor/
+/var/

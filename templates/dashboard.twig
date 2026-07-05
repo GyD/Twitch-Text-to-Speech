@@ -1,0 +1,81 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Configuration TTS{% endblock %}
+
+{% block content %}
+    <section class="page-title">
+        <div>
+            <h1>Configuration TTS</h1>
+            <p>Connecté en tant que <strong>{{ user.display_name }}</strong>.</p>
+        </div>
+        {% if user.profile_image_url %}
+            <img class="avatar" src="{{ user.profile_image_url }}" alt="Avatar Twitch de {{ user.display_name }}">
+        {% endif %}
+    </section>
+
+    {% if flash %}
+        <div class="flash">{{ flash }}</div>
+    {% endif %}
+
+    <section class="panel">
+        <h2>URL overlay OBS</h2>
+        <p>Ajoute cette URL comme source navigateur dans OBS :</p>
+        <div class="copy-row">
+            <input id="overlay-url" type="text" readonly value="{{ overlayUrl }}">
+            <button type="button" data-copy-target="overlay-url">Copier</button>
+        </div>
+    </section>
+
+    <form class="settings-form panel" method="post" action="/dashboard/settings">
+        <h2>Préférences</h2>
+
+        <label>
+            Chaîne Twitch
+            <input name="channel" type="text" required pattern="[#]?[a-zA-Z0-9_]{4,25}" value="{{ settings.channel }}">
+        </label>
+
+        <label>
+            Volume
+            <input name="volume" type="range" min="0" max="1" step="0.1" value="{{ settings.volume }}">
+        </label>
+
+        <label>
+            Voix préférée
+            <select id="voice-select" name="voice_name" data-selected-voice="{{ (settings.voice_name ?? '')|e('html_attr') }}">
+                <option value="">Voix par défaut du navigateur</option>
+            </select>
+            <small>La liste dépend du navigateur/OBS qui ouvre cette page. Si la voix n’existe pas côté overlay, la voix par défaut sera utilisée.</small>
+        </label>
+
+        <div class="checkbox-grid">
+            <label><input name="announce_chatter" type="checkbox" value="1" {% if settings.announce_chatter %}checked{% endif %}> Annoncer le pseudo</label>
+            <label><input name="mods_only" type="checkbox" value="1" {% if settings.mods_only %}checked{% endif %}> Modérateurs uniquement</label>
+            <label><input name="vips_only" type="checkbox" value="1" {% if settings.vips_only %}checked{% endif %}> VIPs uniquement</label>
+            <label><input name="tagged_only" type="checkbox" value="1" {% if settings.tagged_only %}checked{% endif %}> Messages avec tag uniquement</label>
+            <label><input name="exclude_commands" type="checkbox" value="1" {% if settings.exclude_commands %}checked{% endif %}> Ignorer les commandes <code>!</code></label>
+            <label><input name="exclude_links" type="checkbox" value="1" {% if settings.exclude_links %}checked{% endif %}> Ignorer les liens</label>
+        </div>
+
+        <label>
+            Chatters exclus, un par ligne
+            <textarea name="excluded_chatters" rows="6">{{ excludedChattersText }}</textarea>
+        </label>
+
+        <div class="form-grid">
+            <label>
+                Longueur max des messages
+                <input name="max_message_length" type="number" min="1" max="500" value="{{ settings.max_message_length }}">
+            </label>
+            <label>
+                Cooldown entre lectures, en ms
+                <input name="cooldown_ms" type="number" min="0" max="30000" step="100" value="{{ settings.cooldown_ms }}">
+            </label>
+        </div>
+
+        <button class="button primary" type="submit">Sauvegarder</button>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/assets/dashboard.js"></script>
+{% endblock %}

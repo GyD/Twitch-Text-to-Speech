@@ -1,0 +1,28 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Twitch TTS - Accueil{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1>Text-to-Speech léger pour chat Twitch</h1>
+        <p>
+            Connecte ton compte Twitch, configure tes préférences TTS puis ajoute l’URL d’overlay dans OBS.
+        </p>
+
+        {% if isAuthenticated %}
+            <a class="button primary" href="/dashboard">Ouvrir la configuration</a>
+        {% else %}
+            <a class="button primary" href="/login">Se connecter avec Twitch</a>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <h2>Approche légère</h2>
+        <ul>
+            <li>Backend PHP Slim + SQLite.</li>
+            <li>Overlay OBS autonome en JavaScript.</li>
+            <li>Connexion au chat Twitch côté navigateur via tmi.js.</li>
+            <li>Synthèse vocale via Web Speech API.</li>
+        </ul>
+    </section>
+{% endblock %}
