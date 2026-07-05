@@ -28,7 +28,6 @@ final class TwitchAuthService
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUri,
             'response_type' => 'code',
-            'scope' => 'user:read:email',
             'state' => $state,
         ]);
     }
