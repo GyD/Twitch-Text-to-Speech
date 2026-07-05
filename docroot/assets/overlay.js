@@ -28,6 +28,15 @@ function stripLeadingBroadcasterMention(message) {
   return message.replace(mentionRegex, '').trim();
 }
 
+function hasBotBadge(badges) {
+  return Boolean(
+    badges.bot ||
+    badges['bot-badge'] ||
+    badges['verified-bot'] ||
+    badges.verified_bot
+  );
+}
+
 function shouldSkipMessage(tags, message) {
   const badges = tags.badges || {};
   const displayName = normalizeLogin(tags['display-name']);
@@ -38,6 +47,10 @@ function shouldSkipMessage(tags, message) {
   }
 
   if (settings.excludeCommands && message.startsWith('!')) {
+    return true;
+  }
+
+  if (settings.ignoreKnownBots && hasBotBadge(badges)) {
     return true;
   }
 

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS tts_settings (
     vips_only INTEGER NOT NULL DEFAULT 0,
     tagged_only INTEGER NOT NULL DEFAULT 0,
     ignore_replies INTEGER NOT NULL DEFAULT 0,
+    ignore_known_bots INTEGER NOT NULL DEFAULT 1,
     exclude_commands INTEGER NOT NULL DEFAULT 1,
     exclude_links INTEGER NOT NULL DEFAULT 1,
     excluded_chatters_json TEXT NOT NULL DEFAULT '[]',
