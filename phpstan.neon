@@ -5,4 +5,7 @@ parameters:
         - config
         - docroot
         - src
+    excludePaths:
+        analyse:
+            - config/settings.local.php
     tmpDir: var/phpstan

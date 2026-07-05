@@ -28,11 +28,19 @@ Run static analysis during development:
 ddev phpstan-analyse
 ```
 
+You can pass regular PHPStan arguments through the DDEV command, for example:
+
+```bash
+ddev phpstan-analyse --debug
+```
+
 Generate a PHPStan baseline when needed:
 
 ```bash
 ddev phpstan-baseline
 ```
+
+The baseline command writes `phpstan-baseline.neon`. Only keep a baseline if you explicitly decide to track existing issues; do not use it to hide new problems.
 
 If `ddev start` needs to add `twitch-tts.ddev.site` to your hosts file, run it from an interactive terminal so you can enter your sudo password.
 

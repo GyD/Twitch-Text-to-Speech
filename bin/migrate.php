@@ -20,9 +20,22 @@ if (!is_dir($databaseDir)) {
 $pdo = new PDO('sqlite:' . $databaseFile);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $pdo->exec('PRAGMA foreign_keys = ON');
-$pdo->exec(file_get_contents($rootPath . '/database/schema.sql'));
 
-$columns = $pdo->query('PRAGMA table_info(tts_settings)')->fetchAll(PDO::FETCH_ASSOC);
+$schema = file_get_contents($rootPath . '/database/schema.sql');
+
+if ($schema === false) {
+    throw new RuntimeException('Unable to read database schema file.');
+}
+
+$pdo->exec($schema);
+
+$tableInfoStatement = $pdo->query('PRAGMA table_info(tts_settings)');
+
+if ($tableInfoStatement === false) {
+    throw new RuntimeException('Unable to read tts_settings table information.');
+}
+
+$columns = $tableInfoStatement->fetchAll(PDO::FETCH_ASSOC);
 $columnNames = array_column($columns, 'name');
 
 if (!in_array('vips_only', $columnNames, true)) {

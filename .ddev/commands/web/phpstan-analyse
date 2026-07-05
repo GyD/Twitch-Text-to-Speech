@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-## Description: Perform a phpstan analyse on the full codebase.
-## Usage: phpstan-analyse
+## Description: Run PHPStan static analysis on the configured project paths.
+## Usage: phpstan-analyse [PHPStan arguments]
 
-php -dmemory_limit=512M ./vendor/bin/phpstan analyse -c phpstan.neon
+readonly PHPSTAN_BIN="./vendor/bin/phpstan"
+
+if [[ ! -x "${PHPSTAN_BIN}" ]]; then
+  echo "PHPStan is not installed. Run: ddev composer install" >&2
+  exit 1
+fi
+
+exec php -dmemory_limit=512M "${PHPSTAN_BIN}" analyse --configuration=phpstan.neon "$@"

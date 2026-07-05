@@ -77,7 +77,11 @@ final class TwitchAuthService
         }
     }
 
-    /** @param array<string, string> $options @return array<string, mixed> */
+    /**
+     * @param array<string, string> $options
+     *
+     * @return array<string, mixed>
+     */
     private function requestJson(string $url, array $options): array
     {
         $response = file_get_contents($url, false, stream_context_create(['http' => $options]));

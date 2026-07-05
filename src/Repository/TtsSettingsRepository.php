@@ -115,7 +115,11 @@ final class TtsSettingsRepository
         ]);
     }
 
-    /** @param array<string, mixed> $settings */
+    /**
+     * @param array<string, mixed> $settings
+     *
+     * @return array<string, mixed>
+     */
     private function normalize(array $settings): array
     {
         $settings['announce_chatter'] = (bool) $settings['announce_chatter'];

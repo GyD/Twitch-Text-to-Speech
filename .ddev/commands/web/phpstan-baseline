@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-## Description: Generate a baseline file for phpstan.
-## Usage: phpstan-baseline
+## Description: Generate a PHPStan baseline from the configured project paths.
+## Usage: phpstan-baseline [PHPStan arguments]
 
-php -dmemory_limit=512M ./vendor/bin/phpstan analyse --generate-baseline -c phpstan.neon .
+readonly PHPSTAN_BIN="./vendor/bin/phpstan"
+readonly BASELINE_FILE="phpstan-baseline.neon"
+
+if [[ ! -x "${PHPSTAN_BIN}" ]]; then
+  echo "PHPStan is not installed. Run: ddev composer install" >&2
+  exit 1
+fi
+
+exec php -dmemory_limit=512M "${PHPSTAN_BIN}" analyse --configuration=phpstan.neon --generate-baseline="${BASELINE_FILE}" "$@"
