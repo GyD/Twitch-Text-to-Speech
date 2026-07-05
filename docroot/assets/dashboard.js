@@ -58,3 +58,66 @@ populateVoiceSelect();
 if (typeof speechSynthesis !== 'undefined') {
   speechSynthesis.addEventListener('voiceschanged', populateVoiceSelect);
 }
+
+const ttsTestButton = document.querySelector('[data-tts-test]');
+const ttsTestMessage = document.getElementById('tts-test-message');
+const ttsTestStatus = document.getElementById('tts-test-status');
+const volumeInput = document.querySelector('input[name="volume"]');
+const rateInput = document.querySelector('input[name="rate"]');
+
+if (ttsTestButton && ttsTestMessage) {
+  ttsTestButton.addEventListener('click', () => {
+    if (typeof speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') {
+      if (ttsTestStatus) {
+        ttsTestStatus.textContent = 'Le TTS n’est pas disponible dans ce navigateur.';
+      }
+
+      return;
+    }
+
+    const message = ttsTestMessage.value.trim();
+
+    if (message === '') {
+      if (ttsTestStatus) {
+        ttsTestStatus.textContent = 'Entre un message de test avant de lancer la lecture.';
+      }
+
+      ttsTestMessage.focus();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.volume = Math.max(0, Math.min(1, Number(volumeInput?.value ?? 1)));
+    utterance.rate = Math.max(0.5, Math.min(2, Number(rateInput?.value ?? 1)));
+
+    if (voiceSelect?.value) {
+      const voice = speechSynthesis.getVoices().find((candidate) => candidate.name === voiceSelect.value);
+
+      if (voice) {
+        utterance.voice = voice;
+      }
+    }
+
+    utterance.onstart = () => {
+      if (ttsTestStatus) {
+        ttsTestStatus.textContent = 'Lecture du test en cours…';
+      }
+    };
+
+    utterance.onend = () => {
+      if (ttsTestStatus) {
+        ttsTestStatus.textContent = 'Test terminé.';
+      }
+    };
+
+    utterance.onerror = () => {
+      if (ttsTestStatus) {
+        ttsTestStatus.textContent = 'Impossible de lire le message de test.';
+      }
+    };
+
+    window.speechSynthesis.speak(utterance);
+  });
+}

@@ -191,6 +191,15 @@ input[type="checkbox"] {
     flex: 1;
 }
 
+.tts-test-field {
+    display: grid;
+    gap: .75rem;
+}
+
+.tts-test-field button {
+    justify-self: start;
+}
+
 small,
 p,
 li {
