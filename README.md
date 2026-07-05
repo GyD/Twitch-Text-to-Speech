@@ -87,6 +87,7 @@ Puis adapte `twitchtts-data/.env` pour ton environnement de production :
 APP_ENV=prod
 APP_URL=https://tts.example.com
 APP_SECRET=une-valeur-longue-et-aleatoire
+TWITCHTTS_HTTP_PORT=7317
 
 TWITCH_CLIENT_ID=...
 TWITCH_CLIENT_SECRET=...
@@ -96,6 +97,14 @@ DATABASE_PATH=var/app.sqlite
 ```
 
 L’URL `TWITCH_REDIRECT_URI` doit être déclarée à l’identique dans la console Twitch Developer.
+
+Le port exposé sur la machine Docker est configurable avec `TWITCHTTS_HTTP_PORT`. Par exemple, pour exposer l’application sur le port `8090` :
+
+```dotenv
+TWITCHTTS_HTTP_PORT=8090
+```
+
+Le port interne du conteneur reste `80`; seul le port d’entrée côté Raspberry Pi change.
 
 Le fichier `.env` et la base SQLite restent donc sur la machine qui exécute Docker :
 
@@ -111,31 +120,33 @@ Le dossier `twitchtts-data/` est ignoré par Git.
 ### Lancer avec Docker Compose
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml up -d --build
 ```
 
 L’application sera disponible localement sur :
 
 ```text
-http://localhost:8080
+http://localhost:7317
 ```
+
+Si tu as changé `TWITCHTTS_HTTP_PORT`, remplace `7317` par la valeur configurée.
 
 ou depuis une autre machine du réseau :
 
 ```text
-http://IP_DU_RASPBERRY_PI:8080
+http://IP_DU_RASPBERRY_PI:7317
 ```
 
 ### Logs
 
 ```bash
-docker compose -f docker-compose.prod.yml logs -f
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml logs -f
 ```
 
 ### Arrêt
 
 ```bash
-docker compose -f docker-compose.prod.yml down
+docker compose --env-file ./twitchtts-data/.env -f docker-compose.prod.yml down
 ```
 
 Les données SQLite restent conservées dans `twitchtts-data/var/app.sqlite`.
@@ -154,7 +165,7 @@ Pour Twitch OAuth, il est recommandé d’exposer l’application derrière une 
 
 Deux options simples :
 
-- Caddy ou Nginx en reverse proxy devant `http://localhost:8080`,
+- Caddy ou Nginx en reverse proxy devant `http://localhost:7317`,
 - Cloudflare Tunnel si tu ne veux pas ouvrir de port sur ta box.
 
 Si `APP_URL` commence par `https://`, les cookies de session sont marqués `Secure`. Il faut donc accéder réellement à l’application en HTTPS.
