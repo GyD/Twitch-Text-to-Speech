@@ -33,8 +33,15 @@ $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware($config->appEnv() !== 'prod', true, true);
 
+$twigCache = $config->twigCache();
+
+if (is_string($twigCache) && !str_starts_with($twigCache, '/')) {
+    $twigCache = $rootPath . '/' . ltrim($twigCache, '/');
+}
+
 $twig = new Environment(new FilesystemLoader($rootPath . '/templates'), [
-    'cache' => false,
+    'cache' => $twigCache,
+    'auto_reload' => $config->appEnv() !== 'prod',
     'strict_variables' => true,
 ]);
 $twig->addGlobal('appVersion', $config->appVersion());

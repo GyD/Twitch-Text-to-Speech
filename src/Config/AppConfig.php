@@ -45,6 +45,25 @@ final readonly class AppConfig
         return $this->string('database.path', 'var/app.sqlite');
     }
 
+    public function twigCache(): false|string
+    {
+        $value = $this->get('twig.cache');
+
+        if ($value === false || $value === 'false' || $value === '0' || $value === 0) {
+            return false;
+        }
+
+        if ($value === true || $value === 'true' || $value === '1' || $value === 1) {
+            return 'var/cache/twig';
+        }
+
+        if ($value === null || $value === '') {
+            return $this->appEnv() === 'prod' ? 'var/cache/twig' : false;
+        }
+
+        return is_scalar($value) ? (string) $value : false;
+    }
+
     public function twitchClientId(): string
     {
         return $this->string('twitch.client_id');

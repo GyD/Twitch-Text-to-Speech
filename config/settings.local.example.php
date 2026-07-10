@@ -10,6 +10,9 @@ return [
     'database' => [
         'path' => 'var/app.sqlite',
     ],
+    'twig' => [
+        'cache' => false,
+    ],
     'twitch' => [
         'client_id' => '',
         'client_secret' => '',

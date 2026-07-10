@@ -65,6 +65,9 @@ return [
     'database' => [
         'path' => 'var/app.sqlite',
     ],
+    'twig' => [
+        'cache' => false,
+    ],
     'twitch' => [
         'client_id' => '...',
         'client_secret' => '...',
@@ -139,6 +142,9 @@ return [
     'database' => [
         'path' => 'var/app.sqlite',
     ],
+    'twig' => [
+        'cache' => true,
+    ],
     'twitch' => [
         'client_id' => '...',
         'client_secret' => '...',
@@ -146,6 +152,12 @@ return [
     ],
 ];
 ```
+
+Twig template compilation cache is configurable with `twig.cache`:
+
+- `false` disables the cache, useful in development.
+- `true` stores compiled templates in `var/cache/twig`.
+- a string value stores compiled templates in that custom path.
 
 The `twitch.redirect_uri` value must be registered exactly as-is in the Twitch Developer Console.
 
