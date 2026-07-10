@@ -31,6 +31,26 @@ document.querySelectorAll('[data-range-output]').forEach((rangeInput) => {
   rangeInput.addEventListener('input', updateOutput);
 });
 
+const overlayUrlInput = document.getElementById('overlay-url');
+const overlayChatToggle = document.querySelector('[data-overlay-chat-toggle]');
+
+if (overlayUrlInput && overlayChatToggle) {
+  const updateOverlayUrl = () => {
+    const overlayUrl = new URL(overlayUrlInput.dataset.baseOverlayUrl || overlayUrlInput.value, window.location.href);
+
+    if (overlayChatToggle.checked) {
+      overlayUrl.searchParams.set('show_chat', '1');
+    } else {
+      overlayUrl.searchParams.delete('show_chat');
+    }
+
+    overlayUrlInput.value = overlayUrl.toString();
+  };
+
+  overlayChatToggle.addEventListener('change', updateOverlayUrl);
+  updateOverlayUrl();
+}
+
 const voiceSelect = document.getElementById('voice-select');
 
 function populateVoiceSelect() {
@@ -119,5 +139,40 @@ if (ttsTestButton && ttsTestMessage) {
     };
 
     window.speechSynthesis.speak(utterance);
+  });
+}
+
+const dashboardTtsPanel = document.querySelector('[data-dashboard-tts-panel]');
+const dashboardTtsContent = document.querySelector('[data-dashboard-tts-content]');
+const dashboardTtsFrame = document.querySelector('[data-dashboard-tts-frame]');
+
+if (dashboardTtsPanel && dashboardTtsContent && dashboardTtsFrame) {
+  const getDashboardTtsFrameSource = () => {
+    const source = new URL(dashboardTtsFrame.dataset.src, window.location.href);
+    source.searchParams.set('view', 'dashboard');
+    source.searchParams.set('show_chat', '1');
+
+    return source.toString();
+  };
+
+  const setDashboardTtsPanelState = (isOpen) => {
+    dashboardTtsPanel.classList.toggle('is-open', isOpen);
+    dashboardTtsContent.hidden = !isOpen;
+
+    if (isOpen) {
+      dashboardTtsFrame.src = getDashboardTtsFrameSource();
+      return;
+    }
+
+    dashboardTtsFrame.contentWindow?.speechSynthesis?.cancel();
+    dashboardTtsFrame.removeAttribute('src');
+
+    if (typeof speechSynthesis !== 'undefined') {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  dashboardTtsPanel.addEventListener('toggle', () => {
+    setDashboardTtsPanelState(dashboardTtsPanel.open);
   });
 }

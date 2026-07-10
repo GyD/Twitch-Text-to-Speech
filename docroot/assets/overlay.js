@@ -1,16 +1,85 @@
 const token = document.body.dataset.overlayToken;
 const statusElement = document.getElementById('status');
+const chatLogElement = document.getElementById('chat-log');
 const settingsPollIntervalMs = 5000;
+const searchParams = new URLSearchParams(window.location.search);
+const isDashboardView = searchParams.get('view') === 'dashboard';
+const shouldShowChat = isDashboardView || searchParams.get('show_chat') === '1';
 
 let settings = null;
 let lastSpokenAt = 0;
 let settingsVersion = null;
 
 const linkRegex = /(([a-z]+:\/\/)?(([a-z0-9-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[^\s]*)?)/i;
+const fallbackAuthorColors = [
+  '#ff7ac8',
+  '#8b5cf6',
+  '#38bdf8',
+  '#22c55e',
+  '#f97316',
+  '#facc15',
+  '#fb7185',
+  '#2dd4bf',
+];
 
 function showError(message) {
   statusElement.textContent = message;
   statusElement.classList.add('is-visible');
+}
+
+function appendChatMessage(tags, message) {
+  if (!shouldShowChat || !chatLogElement) {
+    return;
+  }
+
+  const authorName = tags['display-name'] || tags.username || 'Chatter';
+  const authorColor = getAuthorColor(tags, authorName);
+  const messageElement = document.createElement('article');
+  const authorElement = document.createElement('strong');
+  const textElement = document.createElement('span');
+
+  messageElement.className = 'chat-message';
+  messageElement.style.setProperty('--author-color', authorColor);
+  messageElement.style.setProperty('--author-color-rgb', hexToRgb(authorColor).join(', '));
+  authorElement.textContent = authorName;
+  textElement.textContent = message;
+
+  messageElement.append(authorElement, textElement);
+  chatLogElement.append(messageElement);
+
+  while (chatLogElement.children.length > 50) {
+    chatLogElement.firstElementChild.remove();
+  }
+
+  chatLogElement.scrollTop = chatLogElement.scrollHeight;
+}
+
+function getAuthorColor(tags, authorName) {
+  if (isValidHexColor(tags.color)) {
+    return tags.color;
+  }
+
+  let hash = 0;
+
+  for (const character of authorName) {
+    hash = (hash * 31 + character.charCodeAt(0)) % fallbackAuthorColors.length;
+  }
+
+  return fallbackAuthorColors[hash];
+}
+
+function isValidHexColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(String(value || ''));
+}
+
+function hexToRgb(hexColor) {
+  const normalizedColor = hexColor.replace('#', '');
+
+  return [
+    Number.parseInt(normalizedColor.slice(0, 2), 16),
+    Number.parseInt(normalizedColor.slice(2, 4), 16),
+    Number.parseInt(normalizedColor.slice(4, 6), 16),
+  ];
 }
 
 function normalizeLogin(value) {
@@ -148,6 +217,14 @@ async function reloadOverlayWhenSettingsChange() {
 }
 
 async function start() {
+  if (isDashboardView) {
+    document.body.classList.add('is-dashboard-view');
+  }
+
+  if (shouldShowChat) {
+    document.body.classList.add('show-chat');
+  }
+
   await loadSettings();
 
   const client = new tmi.Client({
@@ -163,6 +240,7 @@ async function start() {
       return;
     }
 
+    appendChatMessage(tags, message);
     speak(tags, message);
   });
 

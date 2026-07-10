@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitch TTS Overlay - {{ channel }}</title>
-    <link rel="stylesheet" href="/assets/overlay.css">
+    <link rel="stylesheet" href="/assets/overlay.css?v={{ appVersion|url_encode }}">
 </head>
 <body data-overlay-token="{{ token }}">
 <div id="status" role="alert" aria-live="assertive"></div>
+<div id="chat-log" aria-live="polite" aria-label="Messages Twitch lus en TTS"></div>
 
 <script src="/assets/tmi.min.js"></script>
-<script src="/assets/overlay.js"></script>
+<script src="/assets/overlay.js?v={{ appVersion|url_encode }}"></script>
 </body>
 </html>

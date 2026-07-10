@@ -6,6 +6,8 @@ namespace App\Config;
 
 final readonly class AppConfig
 {
+    public const VERSION = '0.1.0';
+
     /** @param array<string, mixed> $settings */
     private function __construct(private array $settings)
     {
@@ -26,6 +28,11 @@ final readonly class AppConfig
     public function appEnv(): string
     {
         return $this->string('app.env', 'prod');
+    }
+
+    public function appVersion(): string
+    {
+        return self::VERSION;
     }
 
     public function appUrl(): string

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Twitch TTS{% endblock %}</title>
-    <link rel="stylesheet" href="/assets/app.css">
+    <link rel="stylesheet" href="/assets/app.css?v={{ appVersion|url_encode }}">
     {% block stylesheets %}{% endblock %}
 </head>
 <body>

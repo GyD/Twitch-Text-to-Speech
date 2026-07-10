@@ -21,11 +21,35 @@
         <h2>URL overlay OBS</h2>
         <p>Ajoute cette URL comme source navigateur dans OBS :</p>
         <div class="copy-row">
-            <input id="overlay-url" type="text" readonly value="{{ overlayUrl }}">
+            <input id="overlay-url" type="text" readonly value="{{ overlayUrl }}" data-base-overlay-url="{{ overlayUrl|e('html_attr') }}">
             <button type="button" data-copy-target="overlay-url">Copier</button>
         </div>
-        <p class="warning-message">Attention : l’audio du TTS ne fonctionne pas si l’option OBS « Control audio via OBS » est activée sur la source navigateur.</p>
+        <label class="inline-checkbox">
+            <input id="overlay-show-chat" type="checkbox" data-overlay-chat-toggle>
+            Afficher le chat dans l’overlay
+        </label>
+        <small>Cette option ajoute <code>show_chat=1</code> à l’URL OBS. Décoche-la pour garder seulement l’audio TTS.</small>
+        <p class="warning-message">Attention : l’audio du TTS ne fonctionne pas si l’option OBS « Control audio via OBS » est activée sur la source navigateur suite à un bug chromium.</p>
     </section>
+
+    <details class="panel dashboard-tts-panel" data-dashboard-tts-panel>
+        <summary class="collapsible-panel-header">
+            <div>
+                <h2>Lecture du chat en TTS</h2>
+                <p>Ouvre ce cadre pour connecter le chat Twitch et lire les messages depuis cette page.</p>
+            </div>
+            <span class="collapsible-panel-indicator" aria-hidden="true"></span>
+        </summary>
+        <div class="dashboard-tts-frame-wrapper" hidden data-dashboard-tts-content>
+            <iframe
+                title="Overlay TTS Twitch intégré"
+                data-dashboard-tts-frame
+                data-src="{{ overlayUrl|e('html_attr') }}"
+                allow="autoplay"
+            ></iframe>
+            <small>Quand ce cadre est fermé, l’overlay est déchargé et le chat n’est plus lu.</small>
+        </div>
+    </details>
 
     <form class="settings-form panel" method="post" action="/dashboard/settings">
         <h2>Préférences</h2>
@@ -102,5 +126,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="/assets/dashboard.js"></script>
+    <script src="/assets/dashboard.js?v={{ appVersion|url_encode }}"></script>
 {% endblock %}

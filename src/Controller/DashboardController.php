@@ -27,13 +27,14 @@ final class DashboardController
         $user = $this->users->find($userId);
         $settings = $this->settings->getOrCreateForUser($userId, (string) ($user['login'] ?? ''));
         $appUrl = $this->config->appUrl();
+        $appVersion = $this->config->appVersion();
 
         $response->getBody()->write($this->twig->render('dashboard.twig', [
             'isAuthenticated' => true,
             'user' => $user,
             'settings' => $settings,
             'excludedChattersText' => implode("\n", $settings['excluded_chatters'] ?? []),
-            'overlayUrl' => $appUrl . '/overlay/' . $settings['overlay_token'],
+            'overlayUrl' => $appUrl . '/overlay/' . $settings['overlay_token'] . '?v=' . rawurlencode($appVersion),
             'flash' => $_SESSION['flash'] ?? null,
         ]));
 

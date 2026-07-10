@@ -37,6 +37,7 @@ $twig = new Environment(new FilesystemLoader($rootPath . '/templates'), [
     'cache' => false,
     'strict_variables' => true,
 ]);
+$twig->addGlobal('appVersion', $config->appVersion());
 
 $pdo = (new Database($rootPath, $config))->connect();
 $users = new UserRepository($pdo);
@@ -45,7 +46,7 @@ $settings = new TtsSettingsRepository($pdo);
 $home = new HomeController($twig, $config);
 $auth = new AuthController(new TwitchAuthService($config), $users, $settings);
 $dashboard = new DashboardController($twig, $users, $settings, $config);
-$overlay = new OverlayController($twig, $settings);
+$overlay = new OverlayController($twig, $settings, $config);
 $authMiddleware = new AuthMiddleware();
 
 $app->get('/', $home);
