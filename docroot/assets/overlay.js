@@ -101,6 +101,36 @@ function stripLeadingBroadcasterMention(message) {
   return message.replace(mentionRegex, '').trim();
 }
 
+function stripEmotes(message, emotes) {
+  if (!emotes || typeof emotes !== 'object') {
+    return message;
+  }
+
+  const ranges = Object.values(emotes)
+    .flat()
+    .map((position) => {
+      const [start, end] = String(position).split('-').map(Number);
+
+      return { start, end };
+    })
+    .filter(({ start, end }) => Number.isInteger(start) && Number.isInteger(end) && start <= end)
+    .sort((firstRange, secondRange) => secondRange.start - firstRange.start);
+
+  let cleanMessage = message;
+
+  ranges.forEach(({ start, end }) => {
+    cleanMessage = `${cleanMessage.slice(0, start)}${cleanMessage.slice(end + 1)}`;
+  });
+
+  return cleanMessage.replace(/\s+/g, ' ').trim();
+}
+
+function prepareSpokenMessage(tags, message) {
+  const messageWithoutEmotes = settings.ignoreEmotes ? stripEmotes(message, tags.emotes) : message;
+
+  return settings.taggedOnly ? stripLeadingBroadcasterMention(messageWithoutEmotes) : messageWithoutEmotes.trim();
+}
+
 function mentionsChannel(message) {
   const channel = normalizeLogin(settings.channel);
   const mentionRegex = new RegExp(`(^|[^a-z0-9_])@${escapeRegex(channel)}\\b`, 'i');
@@ -171,7 +201,7 @@ function shouldSkipMessage(tags, message) {
 }
 
 function speak(tags, message) {
-  const spokenMessage = settings.taggedOnly ? stripLeadingBroadcasterMention(message) : message;
+  const spokenMessage = prepareSpokenMessage(tags, message);
 
   if (spokenMessage === '') {
     return;
@@ -250,6 +280,11 @@ async function start() {
   await loadSettings();
 
   const client = new tmi.Client({
+    options: {
+      skipMembership: true,
+      skipUpdatingEmotesets: true,
+      updateEmotesetsTimer: 0,
+    },
     connection: {
       secure: true,
       reconnect: true,

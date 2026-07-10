@@ -8,6 +8,8 @@ final readonly class AppConfig
 {
     public const VERSION = '0.1.0';
 
+    private const DEV_VERSION_RANDOM_BYTES = 4;
+
     /** @param array<string, mixed> $settings */
     private function __construct(private array $settings)
     {
@@ -32,6 +34,10 @@ final readonly class AppConfig
 
     public function appVersion(): string
     {
+        if ($this->appEnv() === 'dev') {
+            return sprintf('%s-dev-%s', self::VERSION, bin2hex(random_bytes(self::DEV_VERSION_RANDOM_BYTES)));
+        }
+
         return self::VERSION;
     }
 

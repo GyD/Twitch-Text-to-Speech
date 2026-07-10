@@ -73,6 +73,7 @@ final class DashboardController
                 'tagged_only' => $data['tagged_only'] ?? false,
                 'ignore_replies' => $data['ignore_replies'] ?? false,
                 'ignore_known_bots' => $data['ignore_known_bots'] ?? false,
+                'ignore_emotes' => $data['ignore_emotes'] ?? false,
                 'exclude_commands' => $data['exclude_commands'] ?? false,
                 'exclude_links' => $data['exclude_links'] ?? false,
                 'excluded_chatters' => $data['excluded_chatters'] ?? '',

@@ -54,4 +54,8 @@ if (!in_array('ignore_known_bots', $columnNames, true)) {
     $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_known_bots INTEGER NOT NULL DEFAULT 1');
 }
 
+if (!in_array('ignore_emotes', $columnNames, true)) {
+    $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_emotes INTEGER NOT NULL DEFAULT 1');
+}
+
 echo sprintf("SQLite database migrated: %s\n", $databaseFile);
