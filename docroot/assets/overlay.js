@@ -23,6 +23,10 @@ const fallbackAuthorColors = [
 ];
 
 function showError(message) {
+  if (!statusElement) {
+    return;
+  }
+
   statusElement.textContent = message;
   statusElement.classList.add('is-visible');
 }
@@ -97,6 +101,13 @@ function stripLeadingBroadcasterMention(message) {
   return message.replace(mentionRegex, '').trim();
 }
 
+function mentionsChannel(message) {
+  const channel = normalizeLogin(settings.channel);
+  const mentionRegex = new RegExp(`(^|[^a-z0-9_])@${escapeRegex(channel)}\\b`, 'i');
+
+  return mentionRegex.test(message);
+}
+
 function hasBotBadge(badges) {
   return Boolean(
     badges.bot ||
@@ -108,8 +119,7 @@ function hasBotBadge(badges) {
 
 function shouldSkipMessage(tags, message) {
   const badges = tags.badges || {};
-  const displayName = normalizeLogin(tags['display-name']);
-  const channel = normalizeLogin(settings.channel);
+  const login = normalizeLogin(tags.username || tags['display-name']);
 
   if (settings.excludeLinks && linkRegex.test(message)) {
     return true;
@@ -137,7 +147,7 @@ function shouldSkipMessage(tags, message) {
     }
   }
 
-  if (settings.taggedOnly && !message.toLowerCase().includes(`@${channel}`)) {
+  if (settings.taggedOnly && !mentionsChannel(message)) {
     return true;
   }
 
@@ -145,7 +155,7 @@ function shouldSkipMessage(tags, message) {
     return true;
   }
 
-  if (settings.excludedChatters.includes(displayName)) {
+  if (settings.excludedChatters.includes(login)) {
     return true;
   }
 
@@ -187,7 +197,7 @@ function speak(tags, message) {
 }
 
 async function loadSettings() {
-  const response = await fetch(`/api/overlay/${token}`);
+  const response = await fetch(`/api/overlay/${encodeURIComponent(token)}`, { cache: 'no-store' });
 
   if (!response.ok) {
     throw new Error('Impossible de charger les préférences de l’overlay.');
@@ -200,7 +210,7 @@ async function loadSettings() {
 
 async function reloadOverlayWhenSettingsChange() {
   try {
-    const response = await fetch(`/api/overlay/${token}`, { cache: 'no-store' });
+    const response = await fetch(`/api/overlay/${encodeURIComponent(token)}`, { cache: 'no-store' });
 
     if (!response.ok) {
       throw new Error('Impossible de vérifier les préférences de l’overlay.');
@@ -217,6 +227,18 @@ async function reloadOverlayWhenSettingsChange() {
 }
 
 async function start() {
+  if (!token) {
+    throw new Error('Token d’overlay manquant. Impossible de charger la configuration.');
+  }
+
+  if (typeof tmi === 'undefined') {
+    throw new Error('La bibliothèque Twitch chat est introuvable.');
+  }
+
+  if (typeof window.speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') {
+    throw new Error('Le TTS n’est pas disponible dans ce navigateur.');
+  }
+
   if (isDashboardView) {
     document.body.classList.add('is-dashboard-view');
   }
@@ -249,7 +271,9 @@ async function start() {
   window.setInterval(reloadOverlayWhenSettingsChange, settingsPollIntervalMs);
 }
 
-window.speechSynthesis.onvoiceschanged = () => {};
+if (typeof window.speechSynthesis !== 'undefined') {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
 
 start().catch((error) => {
   console.error(error);

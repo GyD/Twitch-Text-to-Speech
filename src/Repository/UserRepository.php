@@ -25,6 +25,13 @@ final class UserRepository
     /** @param array<string, mixed> $profile */
     public function upsertFromTwitchProfile(array $profile): int
     {
+        $twitchId = $profile['id'] ?? null;
+        $login = $profile['login'] ?? null;
+
+        if (!is_string($twitchId) || $twitchId === '' || !is_string($login) || $login === '') {
+            throw new \InvalidArgumentException('Twitch profile is missing required identity fields.');
+        }
+
         $now = gmdate(DATE_ATOM);
 
         $statement = $this->pdo->prepare(
@@ -38,17 +45,22 @@ final class UserRepository
         );
 
         $statement->execute([
-            'twitch_id' => $profile['id'],
-            'login' => $profile['login'],
-            'display_name' => $profile['display_name'] ?? $profile['login'],
-            'profile_image_url' => $profile['profile_image_url'] ?? null,
+            'twitch_id' => $twitchId,
+            'login' => $login,
+            'display_name' => $this->optionalString($profile['display_name'] ?? null) ?? $login,
+            'profile_image_url' => $this->optionalString($profile['profile_image_url'] ?? null),
             'created_at' => $now,
             'updated_at' => $now,
         ]);
 
         $lookup = $this->pdo->prepare('SELECT id FROM users WHERE twitch_id = :twitch_id');
-        $lookup->execute(['twitch_id' => $profile['id']]);
+        $lookup->execute(['twitch_id' => $twitchId]);
 
         return (int) $lookup->fetchColumn();
+    }
+
+    private function optionalString(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

@@ -12,6 +12,7 @@ use App\Database\Database;
 use App\Middleware\AuthMiddleware;
 use App\Repository\TtsSettingsRepository;
 use App\Repository\UserRepository;
+use App\Security\CsrfTokenManager;
 use Slim\Factory\AppFactory;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -26,6 +27,7 @@ session_start([
     'cookie_httponly' => true,
     'cookie_samesite' => 'Lax',
     'cookie_secure' => str_starts_with($config->appUrl(), 'https://'),
+    'use_strict_mode' => true,
 ]);
 
 $app = AppFactory::create();
@@ -45,14 +47,16 @@ $twig = new Environment(new FilesystemLoader($rootPath . '/templates'), [
     'strict_variables' => true,
 ]);
 $twig->addGlobal('appVersion', $config->appVersion());
+$csrf = new CsrfTokenManager();
+$twig->addGlobal('csrfToken', $csrf->getToken());
 
 $pdo = (new Database($rootPath, $config))->connect();
 $users = new UserRepository($pdo);
 $settings = new TtsSettingsRepository($pdo);
 
 $home = new HomeController($twig, $config);
-$auth = new AuthController(new TwitchAuthService($config), $users, $settings);
-$dashboard = new DashboardController($twig, $users, $settings, $config);
+$auth = new AuthController(new TwitchAuthService($config), $users, $settings, $csrf);
+$dashboard = new DashboardController($twig, $users, $settings, $config, $csrf);
 $overlay = new OverlayController($twig, $settings);
 $authMiddleware = new AuthMiddleware();
 

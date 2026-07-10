@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Auth;
 
 use App\Config\AppConfig;
+use JsonException;
 use RuntimeException;
 
 final class TwitchAuthService
@@ -84,18 +85,45 @@ final class TwitchAuthService
      */
     private function requestJson(string $url, array $options): array
     {
+        $options['ignore_errors'] = true;
+        $options['timeout'] = 10;
+
         $response = file_get_contents($url, false, stream_context_create(['http' => $options]));
 
         if ($response === false) {
             throw new RuntimeException('Twitch HTTP request failed.');
         }
 
-        $decoded = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $statusCode = $this->extractStatusCode($http_response_header);
+
+        try {
+            $decoded = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new RuntimeException('Twitch returned an invalid JSON response.', previous: $exception);
+        }
 
         if (!is_array($decoded)) {
             throw new RuntimeException('Twitch returned an invalid JSON response.');
         }
 
+        if ($statusCode < 200 || $statusCode >= 300) {
+            $message = $decoded['message'] ?? $decoded['error'] ?? 'Twitch HTTP request failed.';
+
+            throw new RuntimeException(is_string($message) ? $message : 'Twitch HTTP request failed.');
+        }
+
         return $decoded;
+    }
+
+    /** @param list<string> $headers */
+    private function extractStatusCode(array $headers): int
+    {
+        $statusLine = $headers[0] ?? '';
+
+        if (preg_match('/^HTTP\/\S+\s+(\d{3})\b/', $statusLine, $matches) !== 1) {
+            return 0;
+        }
+
+        return (int) $matches[1];
     }
 }

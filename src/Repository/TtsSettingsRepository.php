@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use JsonException;
 use PDO;
 
 final class TtsSettingsRepository
@@ -70,7 +71,13 @@ final class TtsSettingsRepository
     /** @param array<string, mixed> $data */
     public function saveForUser(int $userId, array $data): void
     {
-        $current = $this->getOrCreateForUser($userId, (string) $data['channel']);
+        $channel = $this->sanitizeChannel((string) ($data['channel'] ?? ''));
+
+        if (!$this->isValidChannel($channel)) {
+            throw new \InvalidArgumentException('The Twitch channel must contain 4 to 25 letters, numbers, or underscores.');
+        }
+
+        $this->getOrCreateForUser($userId, $channel);
         $now = gmdate(DATE_ATOM);
 
         $statement = $this->pdo->prepare(
@@ -96,10 +103,10 @@ final class TtsSettingsRepository
 
         $statement->execute([
             'user_id' => $userId,
-            'channel' => $this->sanitizeChannel((string) $data['channel']),
-            'volume' => max(0, min(1, (float) $data['volume'])),
-            'rate' => max(0.5, min(2, (float) $data['rate'])),
-            'voice_name' => $data['voice_name'] ?: null,
+            'channel' => $channel,
+            'volume' => $this->clampFloat($data['volume'] ?? 1, 0, 1),
+            'rate' => $this->clampFloat($data['rate'] ?? 1, 0.5, 2),
+            'voice_name' => $this->sanitizeNullableText((string) ($data['voice_name'] ?? '')),
             'announce_chatter' => !empty($data['announce_chatter']) ? 1 : 0,
             'mods_only' => !empty($data['mods_only']) ? 1 : 0,
             'vips_only' => !empty($data['vips_only']) ? 1 : 0,
@@ -108,9 +115,9 @@ final class TtsSettingsRepository
             'ignore_known_bots' => !empty($data['ignore_known_bots']) ? 1 : 0,
             'exclude_commands' => !empty($data['exclude_commands']) ? 1 : 0,
             'exclude_links' => !empty($data['exclude_links']) ? 1 : 0,
-            'excluded_chatters_json' => json_encode($this->parseExcludedChatters((string) $data['excluded_chatters']), JSON_THROW_ON_ERROR),
-            'max_message_length' => max(1, min(500, (int) $data['max_message_length'])),
-            'cooldown_ms' => max(0, min(30000, (int) $data['cooldown_ms'])),
+            'excluded_chatters_json' => json_encode($this->parseExcludedChatters((string) ($data['excluded_chatters'] ?? '')), JSON_THROW_ON_ERROR),
+            'max_message_length' => $this->clampInt($data['max_message_length'] ?? 250, 1, 500),
+            'cooldown_ms' => $this->clampInt($data['cooldown_ms'] ?? 1000, 0, 30000),
             'updated_at' => $now,
         ]);
     }
@@ -131,14 +138,54 @@ final class TtsSettingsRepository
         $settings['exclude_commands'] = (bool) $settings['exclude_commands'];
         $settings['exclude_links'] = (bool) $settings['exclude_links'];
         $settings['rate'] = (float) ($settings['rate'] ?? 1);
-        $settings['excluded_chatters'] = json_decode($settings['excluded_chatters_json'] ?? '[]', true) ?: [];
+        $settings['excluded_chatters'] = $this->decodeExcludedChatters((string) ($settings['excluded_chatters_json'] ?? '[]'));
 
         return $settings;
+    }
+
+    /** @return list<string> */
+    private function decodeExcludedChatters(string $json): array
+    {
+        try {
+            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return [];
+        }
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $chatters = array_filter($decoded, static fn (mixed $chatter): bool => is_string($chatter) && $chatter !== '');
+
+        return array_values($chatters);
     }
 
     private function sanitizeChannel(string $channel): string
     {
         return ltrim(trim(strtolower($channel)), '#');
+    }
+
+    private function isValidChannel(string $channel): bool
+    {
+        return preg_match('/^[a-z0-9_]{4,25}$/', $channel) === 1;
+    }
+
+    private function sanitizeNullableText(string $value): ?string
+    {
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
+    }
+
+    private function clampFloat(mixed $value, float $minimum, float $maximum): float
+    {
+        return max($minimum, min($maximum, (float) $value));
+    }
+
+    private function clampInt(mixed $value, int $minimum, int $maximum): int
+    {
+        return max($minimum, min($maximum, (int) $value));
     }
 
     /** @return list<string> */

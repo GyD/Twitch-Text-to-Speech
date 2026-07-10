@@ -6,7 +6,13 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
       return;
     }
 
-    await navigator.clipboard.writeText(target.value);
+    try {
+      await navigator.clipboard.writeText(target.value);
+    } catch (error) {
+      target.select();
+      document.execCommand('copy');
+    }
+
     const originalText = button.textContent;
     button.textContent = 'Copié !';
 

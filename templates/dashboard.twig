@@ -52,6 +52,7 @@
     </details>
 
     <form class="settings-form panel" method="post" action="/dashboard/settings">
+        <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
         <h2>Préférences</h2>
 
         <label>

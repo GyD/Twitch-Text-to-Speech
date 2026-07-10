@@ -42,7 +42,10 @@ final class OverlayController
 
         if ($settings === null) {
             $response->getBody()->write(json_encode(['error' => 'Overlay not found'], JSON_THROW_ON_ERROR));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Cache-Control', 'no-store')
+                ->withStatus(404);
         }
 
         $payload = [
@@ -66,6 +69,8 @@ final class OverlayController
 
         $response->getBody()->write(json_encode($payload, JSON_THROW_ON_ERROR));
 
-        return $response->withHeader('Content-Type', 'application/json');
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Cache-Control', 'no-store');
     }
 }
