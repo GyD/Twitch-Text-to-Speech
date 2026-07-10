@@ -53,7 +53,7 @@ $settings = new TtsSettingsRepository($pdo);
 $home = new HomeController($twig, $config);
 $auth = new AuthController(new TwitchAuthService($config), $users, $settings);
 $dashboard = new DashboardController($twig, $users, $settings, $config);
-$overlay = new OverlayController($twig, $settings, $config);
+$overlay = new OverlayController($twig, $settings);
 $authMiddleware = new AuthMiddleware();
 
 $app->get('/', $home);

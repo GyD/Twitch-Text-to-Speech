@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Config\AppConfig;
 use App\Repository\TtsSettingsRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -15,7 +14,6 @@ final class OverlayController
     public function __construct(
         private readonly Environment $twig,
         private readonly TtsSettingsRepository $settings,
-        private readonly AppConfig $config,
     ) {
     }
 
@@ -32,7 +30,6 @@ final class OverlayController
         $response->getBody()->write($this->twig->render('overlay.twig', [
             'token' => $args['token'],
             'channel' => $settings['channel'],
-            'appVersion' => $this->config->appVersion(),
         ]));
 
         return $response;
