@@ -52,14 +52,16 @@ final class TtsSettingsRepository
 
         $statement = $this->pdo->prepare(
             'INSERT INTO tts_settings (
-                user_id, channel, overlay_token, created_at, updated_at
+                user_id, channel, ignore_replies, ignore_known_bots, overlay_token, created_at, updated_at
              ) VALUES (
-                :user_id, :channel, :overlay_token, :created_at, :updated_at
+                :user_id, :channel, :ignore_replies, :ignore_known_bots, :overlay_token, :created_at, :updated_at
              )'
         );
         $statement->execute([
             'user_id' => $userId,
             'channel' => $defaultChannel,
+            'ignore_replies' => 1,
+            'ignore_known_bots' => 1,
             'overlay_token' => $token,
             'created_at' => $now,
             'updated_at' => $now,
@@ -91,6 +93,7 @@ final class TtsSettingsRepository
                 vips_only = :vips_only,
                 tagged_only = :tagged_only,
                 ignore_replies = :ignore_replies,
+                ignore_leading_mentions = :ignore_leading_mentions,
                 ignore_known_bots = :ignore_known_bots,
                 ignore_streamer = :ignore_streamer,
                 ignore_emotes = :ignore_emotes,
@@ -114,6 +117,7 @@ final class TtsSettingsRepository
             'vips_only' => !empty($data['vips_only']) ? 1 : 0,
             'tagged_only' => !empty($data['tagged_only']) ? 1 : 0,
             'ignore_replies' => !empty($data['ignore_replies']) ? 1 : 0,
+            'ignore_leading_mentions' => !empty($data['ignore_leading_mentions']) ? 1 : 0,
             'ignore_known_bots' => !empty($data['ignore_known_bots']) ? 1 : 0,
             'ignore_streamer' => !empty($data['ignore_streamer']) ? 1 : 0,
             'ignore_emotes' => !empty($data['ignore_emotes']) ? 1 : 0,
@@ -137,7 +141,8 @@ final class TtsSettingsRepository
         $settings['mods_only'] = (bool) $settings['mods_only'];
         $settings['vips_only'] = (bool) ($settings['vips_only'] ?? false);
         $settings['tagged_only'] = (bool) $settings['tagged_only'];
-        $settings['ignore_replies'] = (bool) ($settings['ignore_replies'] ?? false);
+        $settings['ignore_replies'] = (bool) ($settings['ignore_replies'] ?? true);
+        $settings['ignore_leading_mentions'] = (bool) ($settings['ignore_leading_mentions'] ?? false);
         $settings['ignore_known_bots'] = (bool) ($settings['ignore_known_bots'] ?? true);
         $settings['ignore_streamer'] = (bool) ($settings['ignore_streamer'] ?? true);
         $settings['ignore_emotes'] = (bool) ($settings['ignore_emotes'] ?? true);

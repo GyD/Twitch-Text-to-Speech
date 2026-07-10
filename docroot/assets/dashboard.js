@@ -37,6 +37,24 @@ document.querySelectorAll('[data-range-output]').forEach((rangeInput) => {
   rangeInput.addEventListener('input', updateOutput);
 });
 
+const ignoreRepliesToggle = document.querySelector('[data-ignore-replies-toggle]');
+const ignoreLeadingMentionsOption = document.querySelector('[data-ignore-leading-mentions-option]');
+
+if (ignoreRepliesToggle && ignoreLeadingMentionsOption) {
+  const ignoreLeadingMentionsInput = ignoreLeadingMentionsOption.querySelector('input');
+
+  const updateIgnoreLeadingMentionsVisibility = () => {
+    ignoreLeadingMentionsOption.hidden = !ignoreRepliesToggle.checked;
+
+    if (!ignoreRepliesToggle.checked && ignoreLeadingMentionsInput) {
+      ignoreLeadingMentionsInput.checked = false;
+    }
+  };
+
+  ignoreRepliesToggle.addEventListener('change', updateIgnoreLeadingMentionsVisibility);
+  updateIgnoreLeadingMentionsVisibility();
+}
+
 const overlayUrlInput = document.getElementById('overlay-url');
 const overlayChatToggle = document.querySelector('[data-overlay-chat-toggle]');
 

@@ -138,6 +138,14 @@ function mentionsChannel(message) {
   return mentionRegex.test(message);
 }
 
+function isReply(tags) {
+  return Boolean(tags['reply-parent-msg-id'] || tags['reply-thread-parent-msg-id']);
+}
+
+function startsWithChatterMention(message) {
+  return /^@[a-z0-9_]{1,25}\b/i.test(message.trim());
+}
+
 function hasBotBadge(badges) {
   return Boolean(
     badges.bot ||
@@ -181,11 +189,18 @@ function shouldSkipMessage(tags, message) {
     }
   }
 
-  if (settings.taggedOnly && !mentionsChannel(message)) {
+  const messageMentionsChannel = mentionsChannel(message);
+  const messageIsReply = isReply(tags);
+
+  if (settings.taggedOnly && !messageMentionsChannel) {
     return true;
   }
 
-  if (settings.ignoreReplies && (tags['reply-parent-msg-id'] || tags['reply-thread-parent-msg-id'])) {
+  if (settings.ignoreReplies && messageIsReply) {
+    return true;
+  }
+
+  if (settings.ignoreReplies && settings.ignoreLeadingMentions && !messageIsReply && !messageMentionsChannel && startsWithChatterMention(message)) {
     return true;
   }
 

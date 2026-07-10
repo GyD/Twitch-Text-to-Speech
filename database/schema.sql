@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS tts_settings (
     mods_only INTEGER NOT NULL DEFAULT 0,
     vips_only INTEGER NOT NULL DEFAULT 0,
     tagged_only INTEGER NOT NULL DEFAULT 0,
-    ignore_replies INTEGER NOT NULL DEFAULT 0,
+    ignore_replies INTEGER NOT NULL DEFAULT 1,
     ignore_leading_mentions INTEGER NOT NULL DEFAULT 0,
     ignore_known_bots INTEGER NOT NULL DEFAULT 1,
     ignore_streamer INTEGER NOT NULL DEFAULT 1,

@@ -72,6 +72,7 @@ final class DashboardController
                 'vips_only' => $data['vips_only'] ?? false,
                 'tagged_only' => $data['tagged_only'] ?? false,
                 'ignore_replies' => $data['ignore_replies'] ?? false,
+                'ignore_leading_mentions' => $data['ignore_leading_mentions'] ?? false,
                 'ignore_known_bots' => $data['ignore_known_bots'] ?? false,
                 'ignore_streamer' => $data['ignore_streamer'] ?? false,
                 'ignore_emotes' => $data['ignore_emotes'] ?? false,

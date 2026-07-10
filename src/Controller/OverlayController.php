@@ -59,6 +59,7 @@ final class OverlayController
             'vipsOnly' => $settings['vips_only'],
             'taggedOnly' => $settings['tagged_only'],
             'ignoreReplies' => $settings['ignore_replies'],
+            'ignoreLeadingMentions' => $settings['ignore_leading_mentions'],
             'ignoreKnownBots' => $settings['ignore_known_bots'],
             'ignoreStreamer' => $settings['ignore_streamer'],
             'ignoreEmotes' => $settings['ignore_emotes'],

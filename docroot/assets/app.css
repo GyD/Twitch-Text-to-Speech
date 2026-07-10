@@ -173,6 +173,10 @@ input[type="checkbox"] {
     gap: .8rem;
 }
 
+.message-restrictions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .checkbox-grid > label,
 .checkbox-grid > .option-group {
     display: flex;
@@ -192,6 +196,10 @@ input[type="checkbox"] {
     display: flex;
     align-items: center;
     gap: .5rem;
+}
+
+.option-group label[hidden] {
+    display: none;
 }
 
 .settings-group {
@@ -313,6 +321,10 @@ li {
 }
 
 @media (max-width: 640px) {
+    .message-restrictions-grid {
+        grid-template-columns: 1fr;
+    }
+
     .copy-row,
     .collapsible-panel-header,
     .page-title {
