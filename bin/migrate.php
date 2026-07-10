@@ -50,8 +50,16 @@ if (!in_array('ignore_replies', $columnNames, true)) {
     $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_replies INTEGER NOT NULL DEFAULT 0');
 }
 
+if (!in_array('ignore_leading_mentions', $columnNames, true)) {
+    $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_leading_mentions INTEGER NOT NULL DEFAULT 0');
+}
+
 if (!in_array('ignore_known_bots', $columnNames, true)) {
     $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_known_bots INTEGER NOT NULL DEFAULT 1');
+}
+
+if (!in_array('ignore_streamer', $columnNames, true)) {
+    $pdo->exec('ALTER TABLE tts_settings ADD COLUMN ignore_streamer INTEGER NOT NULL DEFAULT 1');
 }
 
 if (!in_array('ignore_emotes', $columnNames, true)) {

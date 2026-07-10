@@ -92,6 +92,7 @@ final class TtsSettingsRepository
                 tagged_only = :tagged_only,
                 ignore_replies = :ignore_replies,
                 ignore_known_bots = :ignore_known_bots,
+                ignore_streamer = :ignore_streamer,
                 ignore_emotes = :ignore_emotes,
                 exclude_commands = :exclude_commands,
                 exclude_links = :exclude_links,
@@ -114,6 +115,7 @@ final class TtsSettingsRepository
             'tagged_only' => !empty($data['tagged_only']) ? 1 : 0,
             'ignore_replies' => !empty($data['ignore_replies']) ? 1 : 0,
             'ignore_known_bots' => !empty($data['ignore_known_bots']) ? 1 : 0,
+            'ignore_streamer' => !empty($data['ignore_streamer']) ? 1 : 0,
             'ignore_emotes' => !empty($data['ignore_emotes']) ? 1 : 0,
             'exclude_commands' => !empty($data['exclude_commands']) ? 1 : 0,
             'exclude_links' => !empty($data['exclude_links']) ? 1 : 0,
@@ -137,6 +139,7 @@ final class TtsSettingsRepository
         $settings['tagged_only'] = (bool) $settings['tagged_only'];
         $settings['ignore_replies'] = (bool) ($settings['ignore_replies'] ?? false);
         $settings['ignore_known_bots'] = (bool) ($settings['ignore_known_bots'] ?? true);
+        $settings['ignore_streamer'] = (bool) ($settings['ignore_streamer'] ?? true);
         $settings['ignore_emotes'] = (bool) ($settings['ignore_emotes'] ?? true);
         $settings['exclude_commands'] = (bool) $settings['exclude_commands'];
         $settings['exclude_links'] = (bool) $settings['exclude_links'];

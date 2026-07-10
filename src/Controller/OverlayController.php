@@ -60,6 +60,7 @@ final class OverlayController
             'taggedOnly' => $settings['tagged_only'],
             'ignoreReplies' => $settings['ignore_replies'],
             'ignoreKnownBots' => $settings['ignore_known_bots'],
+            'ignoreStreamer' => $settings['ignore_streamer'],
             'ignoreEmotes' => $settings['ignore_emotes'],
             'excludeCommands' => $settings['exclude_commands'],
             'excludeLinks' => $settings['exclude_links'],

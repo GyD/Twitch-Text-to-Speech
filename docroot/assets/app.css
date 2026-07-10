@@ -173,13 +173,50 @@ input[type="checkbox"] {
     gap: .8rem;
 }
 
-.checkbox-grid label {
+.checkbox-grid > label,
+.checkbox-grid > .option-group {
     display: flex;
     align-items: center;
     gap: .5rem;
     padding: .75rem;
     border: 1px solid var(--border);
     border-radius: .7rem;
+}
+
+.checkbox-grid > .option-group {
+    display: grid;
+    align-items: stretch;
+}
+
+.option-group label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.settings-group {
+    display: grid;
+    gap: .8rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: .7rem;
+}
+
+.settings-group legend {
+    padding: 0 .35rem;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.settings-group small {
+    display: block;
+}
+
+.settings-group .sub-option {
+    margin-left: 1.6rem;
+    color: var(--muted);
+    font-size: .85rem;
 }
 
 .inline-checkbox {

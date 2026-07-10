@@ -168,6 +168,10 @@ function shouldSkipMessage(tags, message) {
   const isVip = Boolean(badges.vip);
   const hasRoleFilter = settings.modsOnly || settings.vipsOnly;
 
+  if (settings.ignoreStreamer && (isBroadcaster || login === normalizeLogin(settings.channel))) {
+    return true;
+  }
+
   if (hasRoleFilter && !isBroadcaster) {
     const isAllowedModerator = settings.modsOnly && isModerator;
     const isAllowedVip = settings.vipsOnly && isVip;
